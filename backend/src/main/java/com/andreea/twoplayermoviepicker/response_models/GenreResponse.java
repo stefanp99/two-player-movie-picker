@@ -1,6 +1,5 @@
 package com.andreea.twoplayermoviepicker.response_models;
 
-import com.uwetrottmann.tmdb2.entities.Genre;
 import lombok.Builder;
 import lombok.Data;
 
@@ -10,10 +9,10 @@ public class GenreResponse {
     private Integer id;
     private String name;
 
-    public static GenreResponse fromGenre(Genre genre) {
+    public static GenreResponse fromGenre(info.movito.themoviedbapi.model.core.Genre genre) {
         return GenreResponse.builder()
-                .id(genre.id)
-                .name(genre.name)
+                .id(genre.getId())
+                .name(genre.getName())
                 .build();
     }
 }

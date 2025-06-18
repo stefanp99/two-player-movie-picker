@@ -1,8 +1,8 @@
 package com.andreea.twoplayermoviepicker.utils;
 
-import com.uwetrottmann.tmdb2.enumerations.SortBy;
+import info.movito.themoviedbapi.tools.sortby.DiscoverMovieSortBy;
 
 public class ConfigVariables {
     public static final Integer MAX_DISCOVER_PAGE = 300;
-    public static final SortBy DISCOVER_SORT_BY = SortBy.POPULARITY_DESC;
+    public static final DiscoverMovieSortBy DISCOVER_SORT_BY = DiscoverMovieSortBy.POPULARITY_DESC;
 }

@@ -2,16 +2,19 @@ package com.andreea.twoplayermoviepicker.services;
 
 import com.andreea.twoplayermoviepicker.exceptions.MovieNotFoundException;
 import com.andreea.twoplayermoviepicker.response_models.MovieResponse;
-import com.uwetrottmann.tmdb2.Tmdb;
-import com.uwetrottmann.tmdb2.entities.Movie;
-import com.uwetrottmann.tmdb2.entities.MovieResultsPage;
+import info.movito.themoviedbapi.TmdbApi;
+import info.movito.themoviedbapi.TmdbDiscover;
+import info.movito.themoviedbapi.TmdbMovies;
+import info.movito.themoviedbapi.model.core.IdElement;
+import info.movito.themoviedbapi.model.core.MovieResultsPage;
+import info.movito.themoviedbapi.model.movies.MovieDb;
+import info.movito.themoviedbapi.tools.TmdbException;
+import info.movito.themoviedbapi.tools.builders.discover.DiscoverMovieParamBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import retrofit2.Response;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -25,10 +28,10 @@ import static java.lang.String.format;
 @Slf4j
 @Service
 public class TmdbService {
-    private final Tmdb tmdb;
+    private final TmdbApi tmdbApi;
 
     public TmdbService(@Value("${tmdb-api-key}") String tmdbApiKey) {
-        tmdb = new Tmdb(tmdbApiKey);
+        tmdbApi = new TmdbApi(tmdbApiKey);
     }
 
     public ResponseEntity<List<MovieResponse>> getRandomMoviesFromDiscover(String language,
@@ -71,35 +74,24 @@ public class TmdbService {
         return ResponseEntity.ok(newSeed);
     }
 
-    private Movie getMovieById(Integer id, String language) {
-        Response<Movie> movieResponse;
+    private MovieDb getMovieById(Integer id, String language) {
         try {
-            movieResponse = tmdb.moviesService()
-                    .summary(id, language)
-                    .execute();
-
-            if (movieResponse.isSuccessful()) {
-                return movieResponse.body();
-            }
-            log.warn("Movie not found by id: {}", id);
-        } catch (IOException e) {
-            //TODO: see execute() javadoc
-            log.warn("IOException while getting movie by id: {}", id, e);
+            TmdbMovies tmdbMovies = tmdbApi.getMovies();
+            return tmdbMovies.getDetails(id, language);
+        } catch (TmdbException e) {
+            throw new RuntimeException(e);
         }
-        return null;
     }
 
     private MovieResultsPage getMovieResultsPageFromDiscover(Integer page, String language) {
         try {
-            Response<MovieResultsPage> movieResultsPageResponse = tmdb.discoverMovie()
+            TmdbDiscover tmdbDiscover = tmdbApi.getDiscover();
+            DiscoverMovieParamBuilder discoverMovieParamBuilder = new DiscoverMovieParamBuilder()
                     .language(language)
                     .page(page)
-                    .sort_by(DISCOVER_SORT_BY)
-                    .build()
-                    .execute();
-
-            return movieResultsPageResponse.body();
-        } catch (IOException e) {
+                    .sortBy(DISCOVER_SORT_BY);
+            return tmdbDiscover.getMovie(discoverMovieParamBuilder);
+        } catch (TmdbException e) {
             throw new RuntimeException(e);
         }
     }
@@ -108,21 +100,19 @@ public class TmdbService {
                                                                          String language,
                                                                          Integer limit,
                                                                          Random random) {
-        if (movieResultsPage.results == null) {
-            throw new MovieNotFoundException(format("Movies not found on discover page %s", movieResultsPage.id));
+        if (movieResultsPage.getResults() == null) {
+            throw new MovieNotFoundException(format("Movies not found on discover page %s", movieResultsPage.getId()));
         }
-        List<Integer> movieIdList = movieResultsPage.results.stream()
-                .map(baseMovie -> baseMovie.id)
+        List<Integer> movieIdList = movieResultsPage.getResults().stream()
+                .map(IdElement::getId)
                 .toList();
 
         List<Integer> randomNumbers = getRandomNumbersFromEnumeration(limit, random);
 
         List<MovieResponse> movieResponseList = new ArrayList<>();
         for (Integer index : randomNumbers) {
-            Movie movie = getMovieById(movieIdList.get(index), language);
-            if (movie != null) {
-                movieResponseList.add(MovieResponse.fromMovie(movie));
-            }
+            MovieDb movieDb = getMovieById(movieIdList.get(index), language);
+            movieResponseList.add(MovieResponse.fromMovie(movieDb));
         }
         return movieResponseList;
     }

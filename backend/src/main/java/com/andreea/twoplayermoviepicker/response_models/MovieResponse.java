@@ -1,10 +1,10 @@
 package com.andreea.twoplayermoviepicker.response_models;
 
-import com.uwetrottmann.tmdb2.entities.Movie;
+import info.movito.themoviedbapi.model.core.Language;
+import info.movito.themoviedbapi.model.movies.MovieDb;
 import lombok.Builder;
 import lombok.Data;
 
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 import static com.andreea.twoplayermoviepicker.utils.Constants.IMDB_TITLE_BASE_URL;
@@ -29,26 +29,25 @@ public class MovieResponse {
     private Double voteAverage;
     private Integer voteCount;
 
-    public static MovieResponse fromMovie(Movie movie) {
+    public static MovieResponse fromMovie(MovieDb movieDb) {
         return MovieResponse.builder()
-                .backDropUrl(movie.backdrop_path != null ? TMDB_IMAGE_BASE_URL.concat(movie.backdrop_path) : null)
-                .genres(movie.genres != null ? movie.genres.stream().map(GenreResponse::fromGenre).toList() : null)
-                .id(movie.id)
-                .imdbUrl(movie.imdb_id != null ? IMDB_TITLE_BASE_URL.concat(movie.imdb_id) : null)
-                .overview(movie.overview)
-                .popularity(movie.popularity)
-                .posterUrl(movie.poster_path != null ? TMDB_IMAGE_BASE_URL.concat(movie.poster_path) : null)
-                .releaseDate(movie.release_date != null ?
-                        new SimpleDateFormat("yyyy-MM-dd").format(movie.release_date) : null)
-                .runtime(movie.runtime)
-                .spokenLanguages(movie.spoken_languages != null ?
-                        movie.spoken_languages.stream().map(spokenLanguage -> spokenLanguage.name).toList() :
+                .backDropUrl(movieDb.getBackdropPath() != null ? TMDB_IMAGE_BASE_URL.concat(movieDb.getBackdropPath()) : null)
+                .genres(movieDb.getGenres() != null ? movieDb.getGenres().stream().map(GenreResponse::fromGenre).toList() : null)
+                .id(movieDb.getId())
+                .imdbUrl(movieDb.getImdbID() != null ? IMDB_TITLE_BASE_URL.concat(movieDb.getImdbID()) : null)
+                .overview(movieDb.getOverview())
+                .popularity(movieDb.getPopularity())
+                .posterUrl(movieDb.getPosterPath() != null ? TMDB_IMAGE_BASE_URL.concat(movieDb.getPosterPath()) : null)
+                .releaseDate(movieDb.getReleaseDate())
+                .runtime(movieDb.getRuntime())
+                .spokenLanguages(movieDb.getSpokenLanguages() != null ?
+                        movieDb.getSpokenLanguages().stream().map(Language::getEnglishName).toList() :
                         null)
-                .status(movie.status != null ? movie.status.value : null)
-                .tagline(movie.tagline)
-                .title(movie.title)
-                .voteAverage(movie.vote_average)
-                .voteCount(movie.vote_count)
+                .status(movieDb.getStatus() != null ? movieDb.getStatus() : null)
+                .tagline(movieDb.getTagline())
+                .title(movieDb.getTitle())
+                .voteAverage(movieDb.getVoteAverage())
+                .voteCount(movieDb.getVoteCount())
                 .build();
     }
 }
