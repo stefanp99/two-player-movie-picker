@@ -1,0 +1,49 @@
+<div class="center-div">
+    <mat-card class="movie-card" [ngStyle]="{
+      'background-image': 'url(' + movies.at(index)?.backDropUrl + ')'
+    }">
+        <mat-card-header class="text-overlay">
+            <mat-card-title-group>
+                <mat-card-title>{{movies.at(index)?.title}}</mat-card-title>
+                <mat-card-subtitle>{{movies.at(index)?.tagline}}</mat-card-subtitle>
+                <img mat-card-lg-image [src]="movies.at(index)?.posterUrl">
+            </mat-card-title-group>
+        </mat-card-header>
+
+        <mat-card-content class="text-overlay">
+            <p>{{movies.at(index)?.overview}}</p>
+
+            <p><strong>Release Date:</strong> {{movies.at(index)?.releaseDate | date}}</p>
+
+            <p><strong>Runtime:</strong> {{movies.at(index)?.runtime}} minutes</p>
+
+            <p><strong>Status:</strong> {{movies.at(index)?.status}}</p>
+
+            <p><strong>Rating:</strong> {{movies.at(index)?.voteAverage}} ({{movies.at(index)?.voteCount}} votes)</p>
+
+            <p><strong>Languages:</strong> {{movies.at(index)?.spokenLanguages?.join(', ')}}</p>
+
+            <!-- IMDb Link -->
+            <p *ngIf="movies.at(index)?.imdbUrl">
+                <a mat-raised-button color="primary" [href]="movies.at(index)?.imdbUrl" target="_blank">
+                    View on IMDb
+                </a>
+            </p>
+        </mat-card-content>
+        <mat-card-footer class="text-overlay">
+            <mat-chip-set aria-label="Movie genres">
+                <mat-chip *ngFor="let genre of movies.at(index)?.genres">{{genre.name}}</mat-chip>
+            </mat-chip-set>
+        </mat-card-footer>
+
+        <mat-card-actions class="action-buttons">
+            <button mat-fab color="warn" aria-label="Skip Button" (click)="skipNext()">
+                <mat-icon>skip_next</mat-icon>
+            </button>
+
+            <button mat-fab color="accent" aria-label="Like Button" (click)="favorite()">
+                <mat-icon>favorite</mat-icon>
+            </button>
+        </mat-card-actions>
+    </mat-card>
+</div>
