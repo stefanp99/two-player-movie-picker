@@ -7,6 +7,8 @@ import info.movito.themoviedbapi.TmdbDiscover;
 import info.movito.themoviedbapi.TmdbMovies;
 import info.movito.themoviedbapi.model.core.IdElement;
 import info.movito.themoviedbapi.model.core.MovieResultsPage;
+import info.movito.themoviedbapi.model.core.video.Video;
+import info.movito.themoviedbapi.model.core.video.VideoResults;
 import info.movito.themoviedbapi.model.movies.MovieDb;
 import info.movito.themoviedbapi.tools.TmdbException;
 import info.movito.themoviedbapi.tools.builders.discover.DiscoverMovieParamBuilder;
@@ -23,6 +25,7 @@ import static com.andreea.twoplayermoviepicker.utils.ConfigVariables.DISCOVER_SO
 import static com.andreea.twoplayermoviepicker.utils.ConfigVariables.MAX_DISCOVER_PAGE;
 import static com.andreea.twoplayermoviepicker.utils.Constants.MAX_NUMBER_BASE_36;
 import static com.andreea.twoplayermoviepicker.utils.Constants.TMDB_DISCOVER_PAGE_SIZE;
+import static com.andreea.twoplayermoviepicker.utils.Constants.YOUTUBE_VIDEO_BASE_URL;
 import static java.lang.String.format;
 
 @Slf4j
@@ -74,6 +77,24 @@ public class TmdbService {
         return ResponseEntity.ok(newSeed);
     }
 
+    public ResponseEntity<String> getYoutubeTrailer(Integer movieId, String language) {
+        try {
+            VideoResults videoResults = tmdbApi.getMovies().getVideos(movieId, language);
+            Video trailer = videoResults.getResults().stream()
+                    .sorted((v1, v2) -> v2.getSize().compareTo(v1.getSize()))
+                    .filter(video -> video.getSite().equals("YouTube") &&
+                            video.getType().equals("Trailer") &&
+                            video.getOfficial())
+                    .findFirst().orElse(null);
+            if (trailer != null) {
+                return ResponseEntity.ok(YOUTUBE_VIDEO_BASE_URL + trailer.getKey());
+            }
+            return ResponseEntity.notFound().build();
+        } catch (TmdbException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private MovieDb getMovieById(Integer id, String language) {
         try {
             TmdbMovies tmdbMovies = tmdbApi.getMovies();
@@ -87,6 +108,8 @@ public class TmdbService {
         try {
             TmdbDiscover tmdbDiscover = tmdbApi.getDiscover();
             DiscoverMovieParamBuilder discoverMovieParamBuilder = new DiscoverMovieParamBuilder()
+                    .includeAdult(false)
+                    .includeVideo(false)
                     .language(language)
                     .page(page)
                     .sortBy(DISCOVER_SORT_BY);

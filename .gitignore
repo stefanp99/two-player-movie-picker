@@ -88,3 +88,4 @@ frontend/.editorconfig
 .DS_Store
 Thumbs.db
 *.log
+.idea

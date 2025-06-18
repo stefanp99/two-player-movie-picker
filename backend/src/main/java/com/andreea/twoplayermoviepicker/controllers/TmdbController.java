@@ -32,4 +32,9 @@ public class TmdbController {
     public ResponseEntity<String> generateNewSeed(@PathVariable String oldSeed) {
         return tmdbService.generateSeed(oldSeed);
     }
+
+    @GetMapping("youtube-trailer/{movieId}/{language}")
+    public ResponseEntity<String> getYoutubeTrailer(@PathVariable Integer movieId, @PathVariable String language) {
+        return tmdbService.getYoutubeTrailer(movieId, language);
+    }
 }

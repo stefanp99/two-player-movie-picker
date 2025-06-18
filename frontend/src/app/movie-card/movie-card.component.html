@@ -13,22 +13,27 @@
         <mat-card-content class="text-overlay">
             <p>{{movies.at(index)?.overview}}</p>
 
+            <p><strong>Rating:</strong> {{movies.at(index)?.voteAverage}} ({{movies.at(index)?.voteCount}} votes)</p>
+
+            <p><strong>Popularity:</strong> {{movies.at(index)?.popularity}}</p>
+
             <p><strong>Release Date:</strong> {{movies.at(index)?.releaseDate | date}}</p>
 
             <p><strong>Runtime:</strong> {{movies.at(index)?.runtime}} minutes</p>
 
-            <p><strong>Status:</strong> {{movies.at(index)?.status}}</p>
-
-            <p><strong>Rating:</strong> {{movies.at(index)?.voteAverage}} ({{movies.at(index)?.voteCount}} votes)</p>
-
             <p><strong>Languages:</strong> {{movies.at(index)?.spokenLanguages?.join(', ')}}</p>
 
-            <!-- IMDb Link -->
+            <p><strong>Status:</strong> {{movies.at(index)?.status}}</p>
+
             <p *ngIf="movies.at(index)?.imdbUrl">
                 <a mat-raised-button color="primary" [href]="movies.at(index)?.imdbUrl" target="_blank">
-                    View on IMDb
+                    <img src="/tmdb.ico" alt="IMDb" style="height: 32px;" />
+                </a>
+                <a mat-raised-button color="primary" (click)="openYoutubeTrailerDialog(movies.at(index)?.id!)">
+                    <img src="/youtube.ico" alt="YouTube" style="height: 32px;" />
                 </a>
             </p>
+
         </mat-card-content>
         <mat-card-footer class="text-overlay">
             <mat-chip-set aria-label="Movie genres">

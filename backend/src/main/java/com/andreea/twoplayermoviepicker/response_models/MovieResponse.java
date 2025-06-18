@@ -26,6 +26,7 @@ public class MovieResponse {
     private String status;
     private String tagline;
     private String title;
+    private String youtubeTrailer;
     private Double voteAverage;
     private Integer voteCount;
 
