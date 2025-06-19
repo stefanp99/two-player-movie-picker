@@ -1,0 +1,44 @@
+<mat-accordion class="accordition-panels" multi>
+    <mat-expansion-panel expanded="true">
+        <mat-expansion-panel-header>
+            <mat-panel-title>Create Room</mat-panel-title>
+            <mat-panel-description>
+                Create a Room
+            </mat-panel-description>
+        </mat-expansion-panel-header>
+        <!--TODO: add filters by genre, popularity, language-->
+
+        <form class="seed-form">
+            <button mat-raised-button color="primary" type="submit" (click)="generateSeed()">
+                Generate Room
+            </button>
+        </form>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel expanded="true">
+        <mat-expansion-panel-header>
+            <mat-panel-title>Join Room</mat-panel-title>
+            <mat-panel-description>
+                Join a Room
+            </mat-panel-description>
+        </mat-expansion-panel-header>
+
+        <form [formGroup]="seedForm" (ngSubmit)="inputSeed()" class="seed-form">
+            <mat-form-field appearance="fill">
+                <mat-label>Enter Room Seed (4 characters)</mat-label>
+                <input matInput formControlName="seed" maxlength="4" (input)="formatInput()" placeholder="A1B2" />
+                <mat-error *ngIf="seedForm.controls['seed'].invalid">
+                    Must be 4 alphanumeric characters.
+                </mat-error>
+            </mat-form-field>
+
+            <button mat-raised-button color="primary" type="submit" [disabled]="seedForm.invalid">
+                Submit
+            </button>
+        </form>
+
+    </mat-expansion-panel>
+</mat-accordion>
+
+<app-movie-card *ngIf="this.initialMovies.length" [movies]="this.initialMovies"
+    [seed]="this.seed"></app-movie-card>

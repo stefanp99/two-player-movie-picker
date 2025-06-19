@@ -1,0 +1,16 @@
+.accordition-panels .mat-expansion-panel-header-description {
+    justify-content: space-between;
+    align-items: center;
+}
+
+.accordition-panels .mat-mdc-form-field+.mat-mdc-form-field {
+    margin-left: 8px;
+}
+
+.seed-form {
+    max-width: 20vw;
+    margin: 20px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}

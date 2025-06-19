@@ -4,6 +4,7 @@
     }">
         <mat-card-header class="text-overlay">
             <mat-card-title-group>
+                <mat-card-subtitle>Room Seed: {{seed}}</mat-card-subtitle>
                 <mat-card-title>{{movies.at(index)?.title}}</mat-card-title>
                 <mat-card-subtitle>{{movies.at(index)?.tagline}}</mat-card-subtitle>
                 <img mat-card-lg-image [src]="movies.at(index)?.posterUrl" alt="Poster URL">

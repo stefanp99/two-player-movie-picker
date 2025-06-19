@@ -33,6 +33,7 @@ export class MovieCardComponent implements OnInit {
   @Input() seed: string = '';
   index: number = 0;
   limit: number = 0;
+  newSeed: string = '';
 
   constructor(private http: HttpClient, private dialog: MatDialog) {
   }
@@ -57,12 +58,18 @@ export class MovieCardComponent implements OnInit {
   }
 
   generateNewSeedAndLoadMoreMovies() {
-    const url = `${environment.apiBaseUrl}/api/v1/tmdb/generate-seed/${this.seed}`;
+    let url = ''
+    if (this.newSeed) {
+      url = `${environment.apiBaseUrl}/api/v1/tmdb/generate-seed/${this.newSeed}`;
+    }
+    else {
+      url = `${environment.apiBaseUrl}/api/v1/tmdb/generate-seed/${this.seed}`;
+    }
 
     this.http.get(url, { responseType: 'text' }).subscribe({
       next: response => {
-        this.seed = response;
-        console.log('New Seed:', this.seed);
+        this.newSeed = response;
+        console.log('New Seed:', this.newSeed);
         this.loadMoreMovies(this.limit / 2);
       },
       error: error => {
@@ -73,7 +80,7 @@ export class MovieCardComponent implements OnInit {
   }
 
   loadMoreMovies(limit: number) {
-    const url = `${environment.apiBaseUrl}/api/v1/tmdb/fetch?language=en-US&limit=${limit}&seed=${this.seed}`;//TODO: make lang configurable
+    const url = `${environment.apiBaseUrl}/api/v1/tmdb/fetch?language=en-US&limit=${limit}&seed=${this.newSeed}`;//TODO: make lang configurable
 
     this.http.get<Movie[]>(url).subscribe({
       next: response => {

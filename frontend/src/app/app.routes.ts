@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
-import { InputSeedComponent } from './input-seed/input-seed.component';
+import { MainPageComponent } from './main-page/main-page.component';
 
 export const routes: Routes = [
-    {path: '', component: InputSeedComponent}
+    {path: '', component: MainPageComponent}
 ];
