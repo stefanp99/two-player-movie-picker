@@ -26,6 +26,7 @@ import static com.andreea.twoplayermoviepicker.utils.ConfigVariables.MAX_DISCOVE
 import static com.andreea.twoplayermoviepicker.utils.Constants.MAX_NUMBER_BASE_36;
 import static com.andreea.twoplayermoviepicker.utils.Constants.TMDB_DISCOVER_PAGE_SIZE;
 import static com.andreea.twoplayermoviepicker.utils.Constants.YOUTUBE_VIDEO_BASE_URL;
+import static com.andreea.twoplayermoviepicker.utils.UtilityMethods.isSeedValid;
 import static java.lang.String.format;
 
 @Slf4j
@@ -42,7 +43,7 @@ public class TmdbService {
                                                                            String seed) {
         List<MovieResponse> movieResponseList;
 
-        if (!seed.matches("^[a-zA-Z0-9]{4}$")) {
+        if (!isSeedValid(seed)) {
             return ResponseEntity.badRequest().build();
         }
 

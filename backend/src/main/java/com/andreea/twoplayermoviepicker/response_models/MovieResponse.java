@@ -3,7 +3,6 @@ package com.andreea.twoplayermoviepicker.response_models;
 import info.movito.themoviedbapi.model.core.Language;
 import info.movito.themoviedbapi.model.movies.MovieDb;
 import lombok.Builder;
-import lombok.Data;
 
 import java.util.List;
 
@@ -12,26 +11,10 @@ import static com.andreea.twoplayermoviepicker.utils.Constants.TMDB_IMAGE_BASE_U
 import static com.andreea.twoplayermoviepicker.utils.Constants.TMDB_MOVIE_PAGE_BASE_URL;
 
 @Builder
-@Data
-public class MovieResponse {
-    private String backDropUrl;
-    private List<GenreResponse> genres;
-    private Integer id;
-    private String imdbUrl;
-    private String overview;
-    private Double popularity;
-    private String posterUrl;
-    private String releaseDate;
-    private Integer runtime;
-    private List<String> spokenLanguages;
-    private String status;
-    private String tagline;
-    private String title;
-    private String tmdbUrl;
-    private String youtubeTrailer;
-    private Double voteAverage;
-    private Integer voteCount;
-
+public record MovieResponse(String backDropUrl, List<GenreResponse> genres, Integer id, String imdbUrl, String overview,
+                            Double popularity, String posterUrl, String releaseDate, Integer runtime,
+                            List<String> spokenLanguages, String status, String tagline, String title, String tmdbUrl,
+                            String youtubeTrailer, Double voteAverage, Integer voteCount) {
     public static MovieResponse fromMovie(MovieDb movieDb) {
         return MovieResponse.builder()
                 .backDropUrl(movieDb.getBackdropPath() != null ? TMDB_IMAGE_BASE_URL.concat(movieDb.getBackdropPath()) : null)

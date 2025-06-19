@@ -22,9 +22,9 @@ public class TmdbController {
     private final TmdbService tmdbService;
 
     @GetMapping("fetch")
-    public ResponseEntity<List<MovieResponse>> getInitialMovies(@RequestParam String language,
-                                                                @RequestParam Integer limit,
-                                                                @RequestParam String seed) {
+    public ResponseEntity<List<MovieResponse>> getMovies(@RequestParam String language,
+                                                         @RequestParam Integer limit,
+                                                         @RequestParam String seed) {
         return tmdbService.getRandomMoviesFromDiscover(language, limit, seed);
     }
 

@@ -10,6 +10,7 @@ import { MovieCardComponent } from '../movie-card/movie-card.component';
 import { environment } from '../../environments/environment';
 import { Movie } from '../models/movie.model';
 import { HttpClient } from '@angular/common/http';
+import { MatDividerModule } from '@angular/material/divider';
 
 @Component({
   selector: 'app-main-page',
@@ -24,6 +25,7 @@ import { HttpClient } from '@angular/common/http';
     MatIconModule,
     MatButtonModule,
     MatExpansionModule,
+    MatDividerModule,
 
     MovieCardComponent
   ],
