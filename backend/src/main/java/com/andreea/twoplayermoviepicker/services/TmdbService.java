@@ -80,12 +80,16 @@ public class TmdbService {
     public ResponseEntity<String> getYoutubeTrailer(Integer movieId, String language) {
         try {
             VideoResults videoResults = tmdbApi.getMovies().getVideos(movieId, language);
-            Video trailer = videoResults.getResults().stream()
-                    .sorted((v1, v2) -> v2.getSize().compareTo(v1.getSize()))
-                    .filter(video -> video.getSite().equals("YouTube") &&
-                            video.getType().equals("Trailer") &&
-                            video.getOfficial())
-                    .findFirst().orElse(null);
+            List<Video> videos = videoResults.getResults();
+
+            Video trailer = findBestVideo(videos, "Trailer", true);
+
+            if (trailer == null) {
+                trailer = findBestVideo(videos, "Trailer", false);
+            }
+            if (trailer == null) {
+                trailer = findBestVideo(videos, "Featurette", false);
+            }
             if (trailer != null) {
                 return ResponseEntity.ok(YOUTUBE_VIDEO_BASE_URL + trailer.getKey());
             }
@@ -153,5 +157,15 @@ public class TmdbService {
         }
 
         return randomNumbers;
+    }
+
+    private Video findBestVideo(List<Video> videos, String type, boolean requireOfficial) {
+        return videos.stream()
+                .sorted((v1, v2) -> v2.getSize().compareTo(v1.getSize()))
+                .filter(video -> video.getSite().equals("YouTube") &&
+                        video.getType().equals(type) &&
+                        (!requireOfficial || video.getOfficial()))
+                .findFirst()
+                .orElse(null);
     }
 }

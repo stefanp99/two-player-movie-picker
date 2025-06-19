@@ -6,7 +6,7 @@
             <mat-card-title-group>
                 <mat-card-title>{{movies.at(index)?.title}}</mat-card-title>
                 <mat-card-subtitle>{{movies.at(index)?.tagline}}</mat-card-subtitle>
-                <img mat-card-lg-image [src]="movies.at(index)?.posterUrl">
+                <img mat-card-lg-image [src]="movies.at(index)?.posterUrl" alt="Poster URL">
             </mat-card-title-group>
         </mat-card-header>
 
@@ -25,14 +25,20 @@
 
             <p><strong>Status:</strong> {{movies.at(index)?.status}}</p>
 
-            <p *ngIf="movies.at(index)?.imdbUrl">
-                <a mat-raised-button color="primary" [href]="movies.at(index)?.imdbUrl" target="_blank">
-                    <img src="/tmdb.ico" alt="IMDb" style="height: 32px;" />
+            <div class="button-row">
+                <a *ngIf="movies.at(index)?.imdbUrl" mat-raised-button color="accent" [href]="movies.at(index)?.imdbUrl"
+                    target="_blank" class="redirect-buttons">
+                    <img src="/imdb.ico" alt="IMDb" style="height: 32px;" />
                 </a>
-                <a mat-raised-button color="primary" (click)="openYoutubeTrailerDialog(movies.at(index)?.id!)">
+                <a *ngIf="movies.at(index)?.tmdbUrl" mat-raised-button [href]="movies.at(index)?.tmdbUrl"
+                    target="_blank" class="redirect-buttons">
+                    <img src="/tmdb.ico" alt="TMDb" style="height: 32px;" />
+                </a>
+                <a mat-raised-button (click)="openYoutubeTrailerDialog(movies.at(index)?.id!)" class="redirect-buttons">
                     <img src="/youtube.ico" alt="YouTube" style="height: 32px;" />
                 </a>
-            </p>
+            </div>
+
 
         </mat-card-content>
         <mat-card-footer class="text-overlay">

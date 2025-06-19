@@ -9,6 +9,7 @@ import java.util.List;
 
 import static com.andreea.twoplayermoviepicker.utils.Constants.IMDB_TITLE_BASE_URL;
 import static com.andreea.twoplayermoviepicker.utils.Constants.TMDB_IMAGE_BASE_URL;
+import static com.andreea.twoplayermoviepicker.utils.Constants.TMDB_MOVIE_PAGE_BASE_URL;
 
 @Builder
 @Data
@@ -26,6 +27,7 @@ public class MovieResponse {
     private String status;
     private String tagline;
     private String title;
+    private String tmdbUrl;
     private String youtubeTrailer;
     private Double voteAverage;
     private Integer voteCount;
@@ -47,6 +49,7 @@ public class MovieResponse {
                 .status(movieDb.getStatus() != null ? movieDb.getStatus() : null)
                 .tagline(movieDb.getTagline())
                 .title(movieDb.getTitle())
+                .tmdbUrl(TMDB_MOVIE_PAGE_BASE_URL.concat(String.valueOf(movieDb.getId())))
                 .voteAverage(movieDb.getVoteAverage())
                 .voteCount(movieDb.getVoteCount())
                 .build();

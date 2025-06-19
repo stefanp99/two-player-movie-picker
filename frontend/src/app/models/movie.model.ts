@@ -17,6 +17,7 @@ export interface Movie {
     status: string;
     tagline: string;
     title: string;
+    tmdbUrl: string;
     voteAverage: number;
     voteCount: number;
 }
