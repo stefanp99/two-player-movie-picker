@@ -17,9 +17,9 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "players")
@@ -44,20 +44,20 @@ public class Player {
     private String likesString;
 
     @Transient
-    public List<String> getLikes() {
+    public Set<String> getLikes() {
         if (likesString == null || likesString.isEmpty()) {
-            return new ArrayList<>();
+            return new HashSet<>();
         }
-        return new ArrayList<>(Arrays.asList(likesString.split(",")));
+        return new HashSet<>(Arrays.asList(likesString.split(",")));
     }
 
     @Transient
-    public void setLikes(List<String> sequence) {
+    public void setLikes(Set<String> sequence) {
         this.likesString = String.join(",", sequence);
     }
 
     public void addToLikes(String value) {
-        List<String> current = getLikes();
+        Set<String> current = getLikes();
         current.add(value);
         setLikes(current);
     }

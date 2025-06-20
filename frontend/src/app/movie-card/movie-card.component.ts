@@ -51,11 +51,26 @@ export class MovieCardComponent implements OnInit {
     }
   }
 
-  favorite() {
-    this.index++;
-    if (this.index % (this.limit / 2) == 0) {
-      this.fetchMoreMovies();
-    }
+  favorite(movieId: number) {
+    const url = `${environment.apiBaseUrl}/api/v1/session/add-to-likes`
+
+    this.http.post<Boolean>(url, {
+      "seed": this.seed,
+      "playerSessionId": this.sessionService.getSessionId(),
+      "movieId": movieId
+    }).subscribe({
+      next: response => {
+        console.log('Response: ' + response);
+        if (response === true) {
+          console.log("Common like!")//TODO: add logic for common likes; maybe cache in browser the details about the common likes
+        }
+      },
+      error: error => {
+        console.error('API Error:', error);
+      }
+    })
+
+    this.skipNext();
   }
 
   fetchMoreMovies() {

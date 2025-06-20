@@ -53,7 +53,7 @@
                 <mat-icon>skip_next</mat-icon>
             </button>
 
-            <button mat-fab color="accent" aria-label="Like Button" (click)="favorite()">
+            <button mat-fab color="accent" aria-label="Like Button" (click)="favorite(movies.at(index)?.id!)">
                 <mat-icon>favorite</mat-icon>
             </button>
         </mat-card-actions>

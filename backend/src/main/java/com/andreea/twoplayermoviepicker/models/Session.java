@@ -17,7 +17,9 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "sessions")
@@ -53,26 +55,26 @@ public class Session {
         setSeedSequence(current);
     }
 
-    @Column(name = "common_likes")
-    private String commonLikesString;
+    @Column(name = "all_likes")
+    private String allLikesString;
 
     @Transient
-    public List<String> getCommonLikes() {
-        if (commonLikesString == null || commonLikesString.isEmpty()) {
-            return new ArrayList<>();
+    public Set<String> getAllLikes() {
+        if (allLikesString == null || allLikesString.isEmpty()) {
+            return new HashSet<>();
         }
-        return new ArrayList<>(Arrays.asList(commonLikesString.split(",")));
+        return new HashSet<>(Arrays.asList(allLikesString.split(",")));
     }
 
     @Transient
-    public void setCommonLikes(List<String> sequence) {
-        this.commonLikesString = String.join(",", sequence);
+    public void setAllLikes(Set<String> sequence) {
+        this.allLikesString = String.join(",", sequence);
     }
 
-    public void addToCommonLikes(String value) {
-        List<String> current = getCommonLikes();
+    public void addToAllLikes(String value) {
+        Set<String> current = getAllLikes();
         current.add(value);
-        setCommonLikes(current);
+        setAllLikes(current);
     }
 
     private LocalDateTime createdAt;

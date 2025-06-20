@@ -1,5 +1,6 @@
 package com.andreea.twoplayermoviepicker.controllers;
 
+import com.andreea.twoplayermoviepicker.request_models.LikeRequest;
 import com.andreea.twoplayermoviepicker.request_models.RoomRequest;
 import com.andreea.twoplayermoviepicker.response_models.MovieResponse;
 import com.andreea.twoplayermoviepicker.services.SessionService;
@@ -34,5 +35,10 @@ public class SessionController {
     @PostMapping("fetch-more")
     public ResponseEntity<List<MovieResponse>> fetchMoreMovies(@RequestBody RoomRequest request) {
         return sessionService.fetchMoreMovies(request);
+    }
+
+    @PostMapping("add-to-likes")
+    public ResponseEntity<Boolean> addToLikesAndReturnIsCommon(@RequestBody LikeRequest request) {
+        return sessionService.addToLikesAndReturnIsCommon(request);
     }
 }
