@@ -8,18 +8,7 @@ export class SessionService {
     private sessionId: string;
 
     constructor() {
-        this.sessionId = this.generateSessionId();
-    }
-
-    private generateSessionId(): string {
-        const existingId = sessionStorage.getItem('session_id');
-        if (existingId) {
-            return existingId;
-        }
-
-        const newId = uuidv4();
-        sessionStorage.setItem('session_id', newId);
-        return newId;
+        this.sessionId = uuidv4();
     }
 
     getSessionId(): string {

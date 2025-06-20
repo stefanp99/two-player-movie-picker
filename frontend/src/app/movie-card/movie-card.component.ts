@@ -7,12 +7,14 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatIconModule } from '@angular/material/icon';
+import confetti from 'canvas-confetti';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Movie } from '../models/movie.model';
+import { SessionService } from '../session.service';
 import { NoTrailerDialogComponent } from './no-trailer-dialog.component';
 import { TrailerDialogComponent } from './trailer-dialog.component';
-import { SessionService } from '../session.service';
+
 
 @Component({
   selector: 'app-movie-card',
@@ -24,7 +26,7 @@ import { SessionService } from '../session.service';
     MatChipsModule,
     MatButtonModule,
     MatIconModule,
-    MatDialogModule
+    MatDialogModule,
   ],
   templateUrl: './movie-card.component.html',
   styleUrl: './movie-card.component.css'
@@ -35,6 +37,7 @@ export class MovieCardComponent implements OnInit {
   index: number = 0;
   limit: number = 0;
   newSeed: string = '';
+  showMatchAnimation = false;
 
   constructor(private http: HttpClient, private dialog: MatDialog, private sessionService: SessionService) {
   }
@@ -62,15 +65,18 @@ export class MovieCardComponent implements OnInit {
       next: response => {
         console.log('Response: ' + response);
         if (response === true) {
-          console.log("Common like!")//TODO: add logic for common likes; maybe cache in browser the details about the common likes
+          this.triggerMatchAnimation(() => {
+            this.skipNext();
+          });
+        } else {
+          this.skipNext();
         }
       },
       error: error => {
         console.error('API Error:', error);
+        this.skipNext();
       }
     })
-
-    this.skipNext();
   }
 
   fetchMoreMovies() {
@@ -119,6 +125,32 @@ export class MovieCardComponent implements OnInit {
     const url = `${environment.apiBaseUrl}/api/v1/tmdb/youtube-trailer/${movieId}/en-US`;//TODO: add lang config
 
     return this.http.get(url, { responseType: 'text' });
+  }
+
+  triggerMatchAnimation(onComplete: () => void) {
+    const duration = 2500;
+    const animationEnd = Date.now() + duration;
+    const defaults = { origin: { y: 0.6 } };
+
+    this.showMatchAnimation = true;
+
+    // Fire confetti bursts continuously during the animation
+    const interval = setInterval(() => {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        clearInterval(interval);
+        this.showMatchAnimation = false;
+        onComplete();
+      }
+
+      confetti({
+        ...defaults,
+        particleCount: 100,
+        spread: 140,
+        startVelocity: 50,
+      });
+    }, 250); // every 250ms
   }
 
 

@@ -30,9 +30,16 @@ public class SessionService {
     private final TmdbService tmdbService;
 
     public ResponseEntity<List<MovieResponse>> createRoom(RoomRequest request) {
-        if (!isSeedValid(request.seed()) ||
-                playerSessionExists(request.playerSessionId()) ||
-                firstSeedExists(request.seed())) {
+        if (!isSeedValid(request.seed())) {
+            log.warn("Invalid seed provided: {}", request.seed());
+            return ResponseEntity.badRequest().build();
+        }
+        if (playerSessionExists(request.playerSessionId())) {
+            log.warn("Player session id {} already exists", request.playerSessionId());
+            return ResponseEntity.badRequest().build();
+        }
+        if (firstSeedExists(request.seed())) {
+            log.warn("Seed {} already exists", request.seed());
             return ResponseEntity.badRequest().build();
         }
 
@@ -42,11 +49,15 @@ public class SessionService {
                 .seedIndex(0)
                 .build();
 
+        log.info("Created new player with session id {}", request.playerSessionId());
+
         Session session = Session.builder()
                 .createdAt(LocalDateTime.now())
                 .build();
         session.addPlayer(player);
         session.addToSeedSequence(request.seed());
+
+        log.info("Created new session with seed {}", request.seed());
 
         sessionRepository.save(session);
 
@@ -54,8 +65,12 @@ public class SessionService {
     }
 
     public ResponseEntity<List<MovieResponse>> joinRoom(RoomRequest request) {
-        if (!isSeedValid(request.seed()) ||
-                playerSessionExists(request.playerSessionId())) {
+        if (!isSeedValid(request.seed())) {
+            log.warn("Invalid seed provided: {}", request.seed());
+            return ResponseEntity.badRequest().build();
+        }
+        if (playerSessionExists(request.playerSessionId())) {
+            log.warn("Player session id {} already exists", request.playerSessionId());
             return ResponseEntity.badRequest().build();
         }
         if (!firstSeedExists(request.seed())) {
@@ -75,6 +90,8 @@ public class SessionService {
             session.addPlayer(player);
             sessionRepository.save(session);
 
+            log.info("Added new player with session id {} to session with id {}", request.playerSessionId(), session.getId());
+
             return tmdbService.getRandomMoviesFromDiscover(request.language(), request.seed());
 
         }
@@ -85,6 +102,7 @@ public class SessionService {
     public ResponseEntity<List<MovieResponse>> fetchMoreMovies(RoomRequest request) {
         Optional<Map.Entry<Session, Player>> result = validateAndFetch(request);
         if (result.isEmpty()) {
+            log.warn("Session or player not found for room request {}", request);
             return ResponseEntity.notFound().build();
         }
 
@@ -103,12 +121,16 @@ public class SessionService {
         if (player.getSeedIndex() + 1 <= session.getSeedSequence().size()) {
             String newSeed = session.getSeedSequence().get(player.getSeedIndex());
             sessionRepository.save(session);
+            log.info("Player seed index is lower or equal than the number of seeds in the sequence, " +
+                    "using seed {} for next request", newSeed);
             return tmdbService.getRandomMoviesFromDiscover(request.language(), newSeed);
         }
 
         String newSeed = tmdbService.generateSeed(lastSeedInSequence);
         session.addToSeedSequence(newSeed);
         session.setUpdatedAt(LocalDateTime.now());
+        log.info("Player seed index is higher than the number of seeds in the sequence, " +
+                "adding new seed {} to sequence", newSeed);
         sessionRepository.save(session);
 
         return tmdbService.getRandomMoviesFromDiscover(request.language(), newSeed);
@@ -118,6 +140,7 @@ public class SessionService {
     public ResponseEntity<Boolean> addToLikesAndReturnIsCommon(LikeRequest request) {
         Optional<Map.Entry<Session, Player>> result = validateAndFetch(request);
         if (result.isEmpty()) {
+            log.warn("Session or player not found for like request {}", request);
             return ResponseEntity.notFound().build();
         }
 
@@ -127,14 +150,16 @@ public class SessionService {
         String movieId = String.valueOf(request.movieId());
 
         if (player.getLikes().contains(movieId)) {
-            log.error("Movie {} already liked by player {}", movieId, player.getPlayerSessionId());
+            log.warn("Movie {} already liked by player {}", movieId, player.getPlayerSessionId());
             return ResponseEntity.badRequest().build();
         }
 
         player.addToLikes(movieId);
         player.setUpdatedAt(LocalDateTime.now());
+        log.info("Added movie {} to likes for player {}", movieId, player.getPlayerSessionId());
 
         if (session.getAllLikes().contains(movieId)) {
+            log.info("Common like found for movie {} by player session id {}", movieId, player.getPlayerSessionId());
             sessionRepository.save(session);
             return ResponseEntity.ok(true);
         }
@@ -142,6 +167,7 @@ public class SessionService {
         session.setUpdatedAt(LocalDateTime.now());
         sessionRepository.save(session);
 
+        log.info("Added movie {} to all likes for player session id {}", movieId, player.getPlayerSessionId());
         return ResponseEntity.ok(false);
     }
 

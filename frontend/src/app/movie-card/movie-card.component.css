@@ -43,3 +43,74 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
 }
+
+.match-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    animation: fadeInOut 3s ease-in-out;
+}
+
+.match-poster {
+    width: 50vw;
+    border-radius: 16px;
+    box-shadow: 0 0 20px white;
+    transform: scale(0.8);
+    animation: popIn 0.75s ease forwards;
+}
+
+.match-text {
+    margin-top: 20px;
+    color: white;
+    font-size: 32px;
+    font-weight: bold;
+    animation: fadeIn 1.5s ease forwards;
+}
+
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes popIn {
+    0% {
+        transform: scale(0.3);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}

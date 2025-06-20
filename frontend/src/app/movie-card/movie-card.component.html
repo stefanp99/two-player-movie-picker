@@ -59,3 +59,8 @@
         </mat-card-actions>
     </mat-card>
 </div>
+
+<div class="match-overlay" *ngIf="showMatchAnimation">
+    <img [src]="movies.at(index)?.posterUrl" alt="Matched Movie Poster" class="match-poster" />
+    <div class="match-text">It's a Match!</div>
+</div>
