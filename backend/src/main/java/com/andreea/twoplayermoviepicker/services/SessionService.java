@@ -158,16 +158,22 @@ public class SessionService {
         player.setUpdatedAt(LocalDateTime.now());
         log.info("Added movie {} to likes for player {}", movieId, player.getPlayerSessionId());
 
-        if (session.getAllLikes().contains(movieId)) {
+        Player otherPlayer = findOtherPlayerInSession(player, session);
+        if (otherPlayer == null) {
+            log.error("No other player found in session {}. Current player session ID {}",
+                    session.getId(), player.getPlayerSessionId());
+            return ResponseEntity.internalServerError().build();
+        }
+
+        if (otherPlayer.getLikes().contains(movieId)) {
             log.info("Common like found for movie {} by player session id {}", movieId, player.getPlayerSessionId());
+            session.addToCommonLikes(movieId);
             sessionRepository.save(session);
             return ResponseEntity.ok(true);
         }
-        session.addToAllLikes(movieId);
         session.setUpdatedAt(LocalDateTime.now());
         sessionRepository.save(session);
 
-        log.info("Added movie {} to all likes for player session id {}", movieId, player.getPlayerSessionId());
         return ResponseEntity.ok(false);
     }
 
@@ -214,5 +220,14 @@ public class SessionService {
 
     private Player findPlayerBySessionId(String playerSessionId) {
         return playerRepository.findByPlayerSessionId(playerSessionId).orElse(null);
+    }
+
+    private Player findOtherPlayerInSession(Player currentPlayer, Session session) {
+        for (Player player : session.getPlayers()) {
+            if (!player.getPlayerSessionId().equals(currentPlayer.getPlayerSessionId())) {
+                return player;
+            }
+        }
+        return null;
     }
 }

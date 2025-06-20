@@ -55,26 +55,26 @@ public class Session {
         setSeedSequence(current);
     }
 
-    @Column(name = "all_likes")
-    private String allLikesString;
+    @Column(name = "common_likes")
+    private String commonLikesString;
 
     @Transient
-    public Set<String> getAllLikes() {
-        if (allLikesString == null || allLikesString.isEmpty()) {
+    public Set<String> getCommonLikes() {
+        if (commonLikesString == null || commonLikesString.isEmpty()) {
             return new HashSet<>();
         }
-        return new HashSet<>(Arrays.asList(allLikesString.split(",")));
+        return new HashSet<>(Arrays.asList(commonLikesString.split(",")));
     }
 
     @Transient
-    public void setAllLikes(Set<String> sequence) {
-        this.allLikesString = String.join(",", sequence);
+    public void setCommonLikes(Set<String> sequence) {
+        this.commonLikesString = String.join(",", sequence);
     }
 
-    public void addToAllLikes(String value) {
-        Set<String> current = getAllLikes();
+    public void addToCommonLikes(String value) {
+        Set<String> current = getCommonLikes();
         current.add(value);
-        setAllLikes(current);
+        setCommonLikes(current);
     }
 
     private LocalDateTime createdAt;
