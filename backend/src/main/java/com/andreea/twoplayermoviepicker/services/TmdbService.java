@@ -23,6 +23,7 @@ import java.util.Random;
 
 import static com.andreea.twoplayermoviepicker.utils.ConfigVariables.DISCOVER_SORT_BY;
 import static com.andreea.twoplayermoviepicker.utils.ConfigVariables.MAX_DISCOVER_PAGE;
+import static com.andreea.twoplayermoviepicker.utils.ConfigVariables.MOVIES_FETCHED_FROM_DISCOVER;
 import static com.andreea.twoplayermoviepicker.utils.Constants.MAX_NUMBER_BASE_36;
 import static com.andreea.twoplayermoviepicker.utils.Constants.TMDB_DISCOVER_PAGE_SIZE;
 import static com.andreea.twoplayermoviepicker.utils.Constants.YOUTUBE_VIDEO_BASE_URL;
@@ -39,7 +40,6 @@ public class TmdbService {
     }
 
     public ResponseEntity<List<MovieResponse>> getRandomMoviesFromDiscover(String language,
-                                                                           Integer limit,
                                                                            String seed) {
         List<MovieResponse> movieResponseList;
 
@@ -55,7 +55,7 @@ public class TmdbService {
 
         MovieResultsPage movieResultsPage = getMovieResultsPageFromDiscover(discoverPage, language);
         if (movieResultsPage != null) {
-            movieResponseList = getMovieResponseListFromMovieResultsPage(movieResultsPage, language, limit, random);
+            movieResponseList = getMovieResponseListFromMovieResultsPage(movieResultsPage, language, random);
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -63,9 +63,9 @@ public class TmdbService {
         return ResponseEntity.ok(movieResponseList);
     }
 
-    public ResponseEntity<String> generateSeed(String oldSeed) {
+    public String generateSeed(String oldSeed) {
         if (!oldSeed.matches("^[a-zA-Z0-9]{4}$")) {
-            return ResponseEntity.badRequest().build();
+            return null;
         }
 
         long oldSeedLong = Long.parseLong(oldSeed.toUpperCase(), 36);
@@ -75,7 +75,7 @@ public class TmdbService {
         while (newSeed.length() < 4) {
             newSeed = "0".concat(newSeed);
         }
-        return ResponseEntity.ok(newSeed);
+        return newSeed;
     }
 
     public ResponseEntity<String> getYoutubeTrailer(Integer movieId, String language) {
@@ -126,7 +126,6 @@ public class TmdbService {
 
     private List<MovieResponse> getMovieResponseListFromMovieResultsPage(MovieResultsPage movieResultsPage,
                                                                          String language,
-                                                                         Integer limit,
                                                                          Random random) {
         if (movieResultsPage.getResults() == null) {
             throw new MovieNotFoundException(format("Movies not found on discover page %s", movieResultsPage.getId()));
@@ -135,7 +134,7 @@ public class TmdbService {
                 .map(IdElement::getId)
                 .toList();
 
-        List<Integer> randomNumbers = getRandomNumbersFromEnumeration(limit, random);
+        List<Integer> randomNumbers = getRandomNumbersFromEnumeration(random);
 
         List<MovieResponse> movieResponseList = new ArrayList<>();
         for (Integer index : randomNumbers) {
@@ -145,10 +144,10 @@ public class TmdbService {
         return movieResponseList;
     }
 
-    private List<Integer> getRandomNumbersFromEnumeration(Integer limit, Random random) {
+    private List<Integer> getRandomNumbersFromEnumeration(Random random) {
         List<Integer> randomNumbers = new ArrayList<>();
 
-        for (int i = 0; i < limit; i++) {
+        for (int i = 0; i < MOVIES_FETCHED_FROM_DISCOVER; i++) {
             int randomNumber = random.nextInt(TMDB_DISCOVER_PAGE_SIZE - 1);
             if (randomNumbers.contains(randomNumber)) {
                 i--;

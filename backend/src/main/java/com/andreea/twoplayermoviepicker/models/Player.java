@@ -14,6 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ public class Player {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(unique=true)
+    @Column(unique = true)
     private String playerSessionId;
 
     @JoinColumn(name = "session_id")
@@ -47,7 +48,7 @@ public class Player {
         if (likesString == null || likesString.isEmpty()) {
             return new ArrayList<>();
         }
-        return Arrays.asList(likesString.split(","));
+        return new ArrayList<>(Arrays.asList(likesString.split(",")));
     }
 
     @Transient
@@ -63,4 +64,7 @@ public class Player {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    @ColumnDefault("0")
+    private Integer seedIndex;
 }

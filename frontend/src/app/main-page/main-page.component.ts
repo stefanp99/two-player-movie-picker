@@ -1,16 +1,17 @@
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MovieCardComponent } from '../movie-card/movie-card.component';
 import { environment } from '../../environments/environment';
 import { Movie } from '../models/movie.model';
-import { HttpClient } from '@angular/common/http';
-import { MatDividerModule } from '@angular/material/divider';
+import { MovieCardComponent } from '../movie-card/movie-card.component';
+import { SessionService } from '../session.service';
 
 @Component({
   selector: 'app-main-page',
@@ -39,7 +40,7 @@ export class MainPageComponent {
 
   seedForm: FormGroup;
 
-  constructor(private fb: FormBuilder, private http: HttpClient) {
+  constructor(private fb: FormBuilder, private http: HttpClient, private sessionService: SessionService) {
     this.seedForm = this.fb.group({
       seed: ['', [Validators.required, Validators.pattern(/^[A-Z0-9]{4}$/)]]
     });
@@ -54,21 +55,43 @@ export class MainPageComponent {
     }
     this.seed = result;
 
-    this.getRandomMovies();
+    this.createRoom();
   }
 
   inputSeed() {
     if (this.seedForm.valid) {
       this.seed = this.seedForm.value.seed;
 
-      this.getRandomMovies();
+      this.joinRoom();
     }
   }
 
-  getRandomMovies() {
-    const url = `${environment.apiBaseUrl}/api/v1/tmdb/fetch?language=en-US&limit=10&seed=${this.seed}`;//TODO: make lang and limit configurable
+  createRoom() {
+    const url = `${environment.apiBaseUrl}/api/v1/session/create-room`;
 
-    this.http.get<Movie[]>(url).subscribe({
+    this.http.post<Movie[]>(url, {
+      "seed": this.seed,
+      "playerSessionId": this.sessionService.getSessionId(),
+      "language": "en-US"//TODO: make this configurable
+    }).subscribe({
+      next: response => {
+        this.initialMovies = response;
+        console.log('API Response:', this.initialMovies);
+      },
+      error: error => {
+        console.error('API Error:', error);
+      }
+    });
+  }
+
+  joinRoom() {
+    const url = `${environment.apiBaseUrl}/api/v1/session/join-room`;
+
+    this.http.post<Movie[]>(url, {
+      "seed": this.seed,
+      "playerSessionId": this.sessionService.getSessionId(),
+      "language": "en-US"//TODO: make this configurable
+    }).subscribe({
       next: response => {
         this.initialMovies = response;
         console.log('API Response:', this.initialMovies);

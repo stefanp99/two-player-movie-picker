@@ -12,6 +12,7 @@ import { environment } from '../../environments/environment';
 import { Movie } from '../models/movie.model';
 import { NoTrailerDialogComponent } from './no-trailer-dialog.component';
 import { TrailerDialogComponent } from './trailer-dialog.component';
+import { SessionService } from '../session.service';
 
 @Component({
   selector: 'app-movie-card',
@@ -35,7 +36,7 @@ export class MovieCardComponent implements OnInit {
   limit: number = 0;
   newSeed: string = '';
 
-  constructor(private http: HttpClient, private dialog: MatDialog) {
+  constructor(private http: HttpClient, private dialog: MatDialog, private sessionService: SessionService) {
   }
 
   ngOnInit(): void {
@@ -46,43 +47,25 @@ export class MovieCardComponent implements OnInit {
   skipNext() {
     this.index++;
     if (this.index % (this.limit / 2) == 0) {
-      this.generateNewSeedAndLoadMoreMovies();
+      this.fetchMoreMovies();
     }
   }
 
   favorite() {
     this.index++;
     if (this.index % (this.limit / 2) == 0) {
-      this.generateNewSeedAndLoadMoreMovies();
+      this.fetchMoreMovies();
     }
   }
 
-  generateNewSeedAndLoadMoreMovies() {
-    let url = ''
-    if (this.newSeed) {
-      url = `${environment.apiBaseUrl}/api/v1/tmdb/generate-seed/${this.newSeed}`;
-    }
-    else {
-      url = `${environment.apiBaseUrl}/api/v1/tmdb/generate-seed/${this.seed}`;
-    }
+  fetchMoreMovies() {
+    const url = `${environment.apiBaseUrl}/api/v1/session/fetch-more`;
 
-    this.http.get(url, { responseType: 'text' }).subscribe({
-      next: response => {
-        this.newSeed = response;
-        console.log('New Seed:', this.newSeed);
-        this.loadMoreMovies(this.limit / 2);
-      },
-      error: error => {
-        console.error('API Error:', error);
-      }
-    })
-
-  }
-
-  loadMoreMovies(limit: number) {
-    const url = `${environment.apiBaseUrl}/api/v1/tmdb/fetch?language=en-US&limit=${limit}&seed=${this.newSeed}`;//TODO: make lang configurable
-
-    this.http.get<Movie[]>(url).subscribe({
+    this.http.post<Movie[]>(url, {
+      "seed": this.seed,
+      "playerSessionId": this.sessionService.getSessionId(),
+      "language": "en-US"//TODO: make this configurable
+    }).subscribe({
       next: response => {
         this.movies.push(...response);
         console.log('New List:', this.movies);
@@ -90,7 +73,8 @@ export class MovieCardComponent implements OnInit {
       error: error => {
         console.error('API Error:', error);
       }
-    });
+    })
+
   }
 
   openYoutubeTrailerDialog(movieId: number) {

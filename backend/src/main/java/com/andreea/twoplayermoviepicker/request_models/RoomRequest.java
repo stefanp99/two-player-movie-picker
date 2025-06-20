@@ -1,4 +1,6 @@
 package com.andreea.twoplayermoviepicker.request_models;
 
-public record RoomRequest(String seed, String playerSessionId) {
+public record RoomRequest(String seed,
+                          String playerSessionId,
+                          String language) {
 }

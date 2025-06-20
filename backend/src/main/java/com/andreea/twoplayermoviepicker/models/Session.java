@@ -39,7 +39,7 @@ public class Session {
         if (seedSequenceString == null || seedSequenceString.isEmpty()) {
             return new ArrayList<>();
         }
-        return Arrays.asList(seedSequenceString.split(","));
+        return new ArrayList<>(Arrays.asList(seedSequenceString.split(",")));
     }
 
     @Transient
@@ -61,7 +61,7 @@ public class Session {
         if (commonLikesString == null || commonLikesString.isEmpty()) {
             return new ArrayList<>();
         }
-        return Arrays.asList(commonLikesString.split(","));
+        return new ArrayList<>(Arrays.asList(commonLikesString.split(",")));
     }
 
     @Transient
