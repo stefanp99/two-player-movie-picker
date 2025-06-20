@@ -35,21 +35,28 @@ export class MovieCardComponent implements OnInit {
   @Input() movies: Movie[] = [];
   @Input() seed: string = '';
   index: number = 0;
-  limit: number = 0;
-  newSeed: string = '';
   showMatchAnimation = false;
 
   constructor(private http: HttpClient, private dialog: MatDialog, private sessionService: SessionService) {
   }
 
   ngOnInit(): void {
-    this.limit = this.movies.length;
-    console.log(this.limit)
+    if (this.sessionService.getIndex() == -1) {
+      this.sessionService.setIndex(this.index);
+      this.sessionService.setMovies(this.movies);
+      this.sessionService.setSeed(this.seed);
+    }
+    else {
+      this.index = this.sessionService.getIndex();
+      this.movies = this.sessionService.getMovies();
+      this.seed = this.sessionService.getSeed();
+    }
   }
 
   skipNext() {
     this.index++;
-    if (this.index % (this.limit / 2) == 0) {
+    this.sessionService.setIndex(this.index);
+    if (this.index % 5 == 0) {//TODO: check this value 5
       this.fetchMoreMovies();
     }
   }
@@ -89,6 +96,7 @@ export class MovieCardComponent implements OnInit {
     }).subscribe({
       next: response => {
         this.movies.push(...response);
+        this.sessionService.setMovies(this.movies);
         console.log('New List:', this.movies);
       },
       error: error => {

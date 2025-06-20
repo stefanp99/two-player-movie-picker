@@ -35,6 +35,7 @@ import { SessionService } from '../session.service';
 })
 export class MainPageComponent {
   seed: string = '';
+  index: number;
 
   initialMovies: Movie[] = [];
 
@@ -44,6 +45,7 @@ export class MainPageComponent {
     this.seedForm = this.fb.group({
       seed: ['', [Validators.required, Validators.pattern(/^[A-Z0-9]{4}$/)]]
     });
+    this.index = sessionService.getIndex();
   }
 
   generateSeed() {
@@ -100,6 +102,11 @@ export class MainPageComponent {
         console.error('API Error:', error);
       }
     });
+  }
+
+  rejoinRoom() {
+    this.initialMovies = this.sessionService.getMovies();
+    this.seed = this.sessionService.getSeed();
   }
 
   formatInput(): void {

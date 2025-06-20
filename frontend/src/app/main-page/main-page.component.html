@@ -12,6 +12,9 @@
             <button mat-raised-button color="primary" type="submit" (click)="generateSeed()">
                 Generate Room
             </button>
+            <button *ngIf="index !== -1" mat-raised-button color="primary" type="submit" (click)="rejoinRoom()">
+                Rejoin room
+            </button>
         </form>
     </mat-expansion-panel>
 
@@ -40,9 +43,8 @@
     </mat-expansion-panel>
 </mat-accordion>
 
-<br/>
+<br />
 <mat-divider></mat-divider>
-<br/>
+<br />
 
-<app-movie-card *ngIf="this.initialMovies.length" [movies]="this.initialMovies"
-    [seed]="this.seed"></app-movie-card>
+<app-movie-card *ngIf="this.initialMovies.length" [movies]="this.initialMovies" [seed]="this.seed"></app-movie-card>

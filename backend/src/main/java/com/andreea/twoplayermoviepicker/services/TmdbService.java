@@ -40,7 +40,7 @@ public class TmdbService {
     }
 
     public ResponseEntity<List<MovieResponse>> getRandomMoviesFromDiscover(String language,
-                                                                           String seed) {
+                                                                           String seed) {//TODO: add nr of movies param
         List<MovieResponse> movieResponseList;
 
         if (!isSeedValid(seed)) {
