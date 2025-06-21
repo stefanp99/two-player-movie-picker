@@ -80,6 +80,7 @@ frontend/libpeerconnection.log
 frontend/testem.log
 frontend/typings
 frontend/.editorconfig
+frontend/src/environments/environment.lan.ts
 
 # ===========================
 # SYSTEM-WIDE
