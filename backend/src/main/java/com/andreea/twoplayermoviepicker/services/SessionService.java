@@ -177,6 +177,21 @@ public class SessionService {
         return ResponseEntity.ok(false);
     }
 
+    public ResponseEntity<Boolean> canPlayerRejoin(String playerSessionId) {
+        Optional<Player> optionalPlayer = playerRepository.findByPlayerSessionId(playerSessionId);
+        if (optionalPlayer.isEmpty()) {
+            log.info("Player with session id {} not found, therefore player can NOT rejoin", playerSessionId);
+            return ResponseEntity.ok(false);
+        }
+        Player player = optionalPlayer.get();
+        if (player.getSession() == null) {
+            log.info("Player with session id {} has no session, therefore player can NOT rejoin", playerSessionId);
+            return ResponseEntity.ok(false);
+        }
+
+        return ResponseEntity.ok(true);
+    }
+
     private Optional<Map.Entry<Session, Player>> validateAndFetch(RoomRequest request) {
         return validateCommon(request.seed(), request.playerSessionId());
     }

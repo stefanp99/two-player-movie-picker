@@ -6,19 +6,17 @@ import { Movie } from './models/movie.model';
     providedIn: 'root'
 })
 export class SessionService {
-    private sessionId: string;
-
     constructor() {
-        this.sessionId = localStorage.getItem('sessionId') || uuidv4();
-        this.setSessionId(this.sessionId);
+        this.setSessionId();
     }
 
-    setSessionId(sessionId: string) {
+    setSessionId() {
+        const sessionId = localStorage.getItem('sessionId') || uuidv4();
         localStorage.setItem('sessionId', sessionId);
     }
 
     getSessionId(): string {
-        return this.sessionId;
+        return localStorage.getItem('sessionId') || '';
     }
 
     setMovies(movies: Movie[]) {
@@ -34,7 +32,7 @@ export class SessionService {
     }
 
     getIndex(): number {
-        return parseInt(localStorage.getItem('index') || '-1');
+        return parseInt(localStorage.getItem('index') || '0');
     }
 
     setSeed(seed: string) {
@@ -43,5 +41,9 @@ export class SessionService {
 
     getSeed(): string {
         return localStorage.getItem('seed') || '';
+    }
+
+    clearAll() {
+        localStorage.clear();
     }
 }

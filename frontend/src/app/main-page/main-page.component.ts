@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
@@ -33,10 +33,10 @@ import { SessionService } from '../session.service';
   templateUrl: './main-page.component.html',
   styleUrl: './main-page.component.css'
 })
-export class MainPageComponent {
+export class MainPageComponent implements OnInit {
   seed: string = '';
-  index: number;
-
+  index: number = 0;
+  canPlayerRejoin: Boolean = false;
   initialMovies: Movie[] = [];
 
   seedForm: FormGroup;
@@ -45,7 +45,12 @@ export class MainPageComponent {
     this.seedForm = this.fb.group({
       seed: ['', [Validators.required, Validators.pattern(/^[A-Z0-9]{4}$/)]]
     });
-    this.index = sessionService.getIndex();
+  }
+
+  ngOnInit(): void {
+    this.index = this.sessionService.getIndex();
+    this.seed = this.sessionService.getSeed();
+    this.playerRejoinCheck()
   }
 
   generateSeed() {
@@ -69,6 +74,9 @@ export class MainPageComponent {
   }
 
   createRoom() {
+    this.sessionService.clearAll();
+    this.sessionService.setSessionId();
+
     const url = `${environment.apiBaseUrl}/api/v1/session/create-room`;
 
     this.http.post<Movie[]>(url, {
@@ -78,6 +86,9 @@ export class MainPageComponent {
     }).subscribe({
       next: response => {
         this.initialMovies = response;
+        this.sessionService.setMovies(this.initialMovies);
+        this.sessionService.setSeed(this.seed);
+        this.sessionService.setIndex(0);
         console.log('API Response:', this.initialMovies);
       },
       error: error => {
@@ -96,12 +107,30 @@ export class MainPageComponent {
     }).subscribe({
       next: response => {
         this.initialMovies = response;
+        this.sessionService.setMovies(this.initialMovies);
+        this.sessionService.setSeed(this.seed);
+        this.sessionService.setIndex(0);
         console.log('API Response:', this.initialMovies);
       },
       error: error => {
         console.error('API Error:', error);
       }
     });
+  }
+
+  playerRejoinCheck() {
+    const url = `${environment.apiBaseUrl}/api/v1/session/can-player-rejoin?playerSessionId=${this.sessionService.getSessionId()}`;
+
+    this.http.get<Boolean>(url).subscribe({
+      next: response => {
+        this.canPlayerRejoin = response && this.index !== 0 && this.seed !== '';
+        console.log('Can player rejoin? ' + this.canPlayerRejoin);
+      },
+      error: error => {
+        this.canPlayerRejoin = false;
+        console.error('API Error:', error);
+      }
+    })
   }
 
   rejoinRoom() {

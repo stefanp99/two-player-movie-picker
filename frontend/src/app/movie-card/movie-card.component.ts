@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
@@ -31,26 +31,14 @@ import { TrailerDialogComponent } from './trailer-dialog.component';
   templateUrl: './movie-card.component.html',
   styleUrl: './movie-card.component.css'
 })
-export class MovieCardComponent implements OnInit {
+export class MovieCardComponent {
   @Input() movies: Movie[] = [];
   @Input() seed: string = '';
   index: number = 0;
   showMatchAnimation = false;
 
   constructor(private http: HttpClient, private dialog: MatDialog, private sessionService: SessionService) {
-  }
-
-  ngOnInit(): void {
-    if (this.sessionService.getIndex() == -1) {
-      this.sessionService.setIndex(this.index);
-      this.sessionService.setMovies(this.movies);
-      this.sessionService.setSeed(this.seed);
-    }
-    else {
-      this.index = this.sessionService.getIndex();
-      this.movies = this.sessionService.getMovies();
-      this.seed = this.sessionService.getSeed();
-    }
+    this.index = this.sessionService.getIndex();
   }
 
   skipNext() {
