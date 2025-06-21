@@ -39,32 +39,47 @@ public class TmdbService {
         tmdbApi = new TmdbApi(tmdbApiKey);
     }
 
+    /**
+     * Retrieves a random list of movies from the discover endpoint using a specified language and seed.
+     *
+     * @param language the language in which the movie data should be retrieved
+     * @param seed     a string seed used to generate randomization for selecting movies
+     * @return a ResponseEntity containing a list of movie responses or an error response in case of invalid seed,
+     * no movies found, or other issues
+     */
     public ResponseEntity<List<MovieResponse>> getRandomMoviesFromDiscover(String language,
-                                                                           String seed) {//TODO: add nr of movies param
+                                                                           String seed) {
         List<MovieResponse> movieResponseList;
 
         if (!isSeedValid(seed)) {
+            log.warn("Invalid seed received in getRandomMoviesFromDiscover: {}", seed);
             return ResponseEntity.badRequest().build();
         }
-
         long seedLong = Long.parseLong(seed.toUpperCase(), 36);
-
         Random random = new Random(seedLong);
-
         Integer discoverPage = random.nextInt(MAX_DISCOVER_PAGE) + 1;
 
+        log.info("Fetching discover movies for seed {} (page {}), language {}", seed, discoverPage, language);
         MovieResultsPage movieResultsPage = getMovieResultsPageFromDiscover(discoverPage, language);
         if (movieResultsPage != null) {
             movieResponseList = getMovieResponseListFromMovieResultsPage(movieResultsPage, language, random);
-        } else {
-            return ResponseEntity.notFound().build();
+            log.info("Successfully fetched {} movies from discover", movieResponseList.size());
+            return ResponseEntity.ok(movieResponseList);
         }
-
-        return ResponseEntity.ok(movieResponseList);
+        return ResponseEntity.notFound().build();
     }
 
+    /**
+     * Generates a new random seed based on the provided old seed. The old seed must be a valid
+     * alphanumeric string of exactly 4 characters. The new seed is also represented as a
+     * 4-character alphanumeric string.
+     *
+     * @param oldSeed the previous seed to base the new seed on, must match the format "[a-zA-Z0-9]{4}"
+     * @return the newly generated 4-character alphanumeric seed, or null if the input seed is invalid
+     */
     public String generateSeed(String oldSeed) {
         if (!oldSeed.matches("^[a-zA-Z0-9]{4}$")) {
+            log.warn("Invalid old seed received for generation: {}", oldSeed);
             return null;
         }
 
@@ -75,9 +90,21 @@ public class TmdbService {
         while (newSeed.length() < 4) {
             newSeed = "0".concat(newSeed);
         }
+
+        log.info("Generated new seed {} from old seed {}", newSeed, oldSeed);
         return newSeed;
     }
 
+    /**
+     * Retrieves the YouTube trailer URL for a specific movie based on its ID and language preferences.
+     * The method searches for the most suitable video marked as a "Trailer" or "Featurette" and hosted on YouTube.
+     * If no relevant video is found, a 404 response is returned. In case of TMDB API errors, an exception is thrown.
+     *
+     * @param movieId  the ID of the movie for which the trailer is to be retrieved
+     * @param language the language code (e.g., "en", "fr") indicating the preferred language for the trailer
+     * @return a ResponseEntity containing the YouTube trailer URL as a string if found,
+     * or a 404 Not Found response if no suitable video is available
+     */
     public ResponseEntity<String> getYoutubeTrailer(Integer movieId, String language) {
         try {
             VideoResults videoResults = tmdbApi.getMovies().getVideos(movieId, language);
@@ -92,10 +119,14 @@ public class TmdbService {
                 trailer = findBestVideo(videos, "Featurette", false);
             }
             if (trailer != null) {
-                return ResponseEntity.ok(YOUTUBE_VIDEO_BASE_URL + trailer.getKey());
+                String trailerUrl = YOUTUBE_VIDEO_BASE_URL + trailer.getKey();
+                log.info("Found YouTube trailer for movie {}: {}", movieId, trailerUrl);
+                return ResponseEntity.ok(trailerUrl);
             }
+            log.warn("No suitable YouTube trailer found for movie {}", movieId);
             return ResponseEntity.notFound().build();
         } catch (TmdbException e) {
+            log.error("Error fetching YouTube trailer for movie {}: {}", movieId, e.getMessage());
             throw new RuntimeException(e);
         }
     }
@@ -105,6 +136,7 @@ public class TmdbService {
             TmdbMovies tmdbMovies = tmdbApi.getMovies();
             return tmdbMovies.getDetails(id, language);
         } catch (TmdbException e) {
+            log.error("Failed to fetch movie details for ID {}: {}", id, e.getMessage());
             throw new RuntimeException(e);
         }
     }
@@ -120,6 +152,7 @@ public class TmdbService {
                     .sortBy(DISCOVER_SORT_BY);
             return tmdbDiscover.getMovie(discoverMovieParamBuilder);
         } catch (TmdbException e) {
+            log.error("Failed to retrieve movies from discover page {}: {}", page, e.getMessage());
             throw new RuntimeException(e);
         }
     }

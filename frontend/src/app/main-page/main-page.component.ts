@@ -43,14 +43,14 @@ export class MainPageComponent implements OnInit {
 
   constructor(private fb: FormBuilder, private http: HttpClient, private sessionService: SessionService) {
     this.seedForm = this.fb.group({
-      seed: ['', [Validators.required, Validators.pattern(/^[A-Z0-9]{4}$/)]]
+      seed: ['', [Validators.required, Validators.pattern(/^[A-Z0-9]{4}$/)]] // 4-character alphanumeric seed
     });
   }
 
   ngOnInit(): void {
-    this.index = this.sessionService.getIndex();
-    this.seed = this.sessionService.getSeed();
-    this.playerRejoinCheck()
+    this.index = this.sessionService.getIndex(); // Restore session index
+    this.seed = this.sessionService.getSeed();   // Restore session seed
+    this.playerRejoinCheck();                    // Determine if rejoin is allowed
   }
 
   generateSeed() {
@@ -62,34 +62,33 @@ export class MainPageComponent implements OnInit {
     }
     this.seed = result;
 
-    this.createRoom();
+    this.createRoom(); // Start a new session with generated seed
   }
 
   inputSeed() {
     if (this.seedForm.valid) {
       this.seed = this.seedForm.value.seed;
 
-      this.joinRoom();
+      this.joinRoom(); // Attempt to join session with inputted seed
     }
   }
 
   createRoom() {
-    this.sessionService.clearAll();
-    this.sessionService.setSessionId();
+    this.sessionService.clearAll(); // Reset previous session data
+    this.sessionService.setSessionId(); // Generate new session ID
 
     const url = `${environment.apiBaseUrl}/api/v1/session/create-room`;
 
     this.http.post<Movie[]>(url, {
       "seed": this.seed,
       "playerSessionId": this.sessionService.getSessionId(),
-      "language": "en-US"//TODO: make this configurable
+      "language": "en-US" // TODO: make this configurable
     }).subscribe({
       next: response => {
         this.initialMovies = response;
         this.sessionService.setMovies(this.initialMovies);
         this.sessionService.setSeed(this.seed);
-        this.sessionService.setIndex(0);
-        console.log('API Response:', this.initialMovies);
+        this.sessionService.setIndex(0); // Start from beginning
       },
       error: error => {
         console.error('API Error:', error);
@@ -103,14 +102,13 @@ export class MainPageComponent implements OnInit {
     this.http.post<Movie[]>(url, {
       "seed": this.seed,
       "playerSessionId": this.sessionService.getSessionId(),
-      "language": "en-US"//TODO: make this configurable
+      "language": "en-US" // TODO: make this configurable
     }).subscribe({
       next: response => {
         this.initialMovies = response;
         this.sessionService.setMovies(this.initialMovies);
         this.sessionService.setSeed(this.seed);
-        this.sessionService.setIndex(0);
-        console.log('API Response:', this.initialMovies);
+        this.sessionService.setIndex(0); // Reset index when joining
       },
       error: error => {
         console.error('API Error:', error);
@@ -123,8 +121,8 @@ export class MainPageComponent implements OnInit {
 
     this.http.get<Boolean>(url).subscribe({
       next: response => {
+        // Rejoin is only allowed if session has previous index and seed
         this.canPlayerRejoin = response && this.index !== 0 && this.seed !== '';
-        console.log('Can player rejoin? ' + this.canPlayerRejoin);
       },
       error: error => {
         this.canPlayerRejoin = false;
@@ -134,11 +132,13 @@ export class MainPageComponent implements OnInit {
   }
 
   rejoinRoom() {
+    // Restore session from local storage/service
     this.initialMovies = this.sessionService.getMovies();
     this.seed = this.sessionService.getSeed();
   }
 
   formatInput(): void {
+    // Enforce uppercase alphanumeric input without special characters
     const control = this.seedForm.get('seed');
     if (control) {
       const formatted = (control.value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');

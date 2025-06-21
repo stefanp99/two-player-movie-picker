@@ -39,13 +39,15 @@ export class MovieCardComponent {
   likedMovieIds: number[] = [];
 
   constructor(private http: HttpClient, private dialog: MatDialog, private sessionService: SessionService) {
-    this.index = this.sessionService.getIndex();
+    this.index = this.sessionService.getIndex(); // Restore index from session if available
   }
 
   skipNext() {
     this.index++;
     this.sessionService.setIndex(this.index);
-    if (this.index % 5 == 0) {//TODO: check this value 5
+
+    // Fetch more movies every 5 skips — value is hardcoded and flagged as TODO
+    if (this.index % 5 == 0) { // TODO: check this value 5
       this.fetchMoreMovies();
     }
   }
@@ -59,9 +61,10 @@ export class MovieCardComponent {
       "movieId": movieId
     }).subscribe({
       next: response => {
-        console.log('Response: ' + response);
         this.likedMovieIds.push(movieId);
         this.sessionService.setLiked(this.likedMovieIds);
+
+        // Trigger confetti animation if mutual match (backend returns true)
         if (response === true) {
           this.triggerMatchAnimation(() => {
             this.skipNext();
@@ -83,34 +86,35 @@ export class MovieCardComponent {
     this.http.post<Movie[]>(url, {
       "seed": this.seed,
       "playerSessionId": this.sessionService.getSessionId(),
-      "language": "en-US"//TODO: make this configurable
+      "language": "en-US" // TODO: make this configurable
     }).subscribe({
       next: response => {
-        this.movies.push(...response);
+        this.movies.push(...response); // Append new movies to existing list
         this.sessionService.setMovies(this.movies);
-        console.log('New List:', this.movies);
       },
       error: error => {
         console.error('API Error:', error);
       }
     })
-
   }
 
   openYoutubeTrailerDialog(movieId: number) {
     this.getYoutubeTrailer(movieId).subscribe({
       next: (ytTrailer) => {
         if (ytTrailer != null) {
+          // Show trailer if found
           this.dialog.open(TrailerDialogComponent, {
             data: ytTrailer,
             width: '50vw',
             height: '50vh',
           });
         } else {
+          // Fallback dialog if no trailer
           this.dialog.open(NoTrailerDialogComponent);
         }
       },
       error: (error) => {
+        // Handle 404 separately
         if (error.status === 404) {
           this.dialog.open(NoTrailerDialogComponent);
         } else {
@@ -121,9 +125,9 @@ export class MovieCardComponent {
   }
 
   getYoutubeTrailer(movieId: number): Observable<string> {
-    const url = `${environment.apiBaseUrl}/api/v1/tmdb/youtube-trailer/${movieId}/en-US`;//TODO: add lang config
+    const url = `${environment.apiBaseUrl}/api/v1/tmdb/youtube-trailer/${movieId}/en-US`; // TODO: add lang config
 
-    return this.http.get(url, { responseType: 'text' });
+    return this.http.get(url, { responseType: 'text' }); // Returns plain text (YouTube URL)
   }
 
   triggerMatchAnimation(onComplete: () => void) {
@@ -133,7 +137,7 @@ export class MovieCardComponent {
 
     this.showMatchAnimation = true;
 
-    // Fire confetti bursts continuously during the animation
+    // Fire confetti every 250ms until duration ends
     const interval = setInterval(() => {
       const timeLeft = animationEnd - Date.now();
 
@@ -149,6 +153,7 @@ export class MovieCardComponent {
         spread: 140,
         startVelocity: 50,
       });
-    }, 250); // every 250ms
+    }, 250);
   }
 }
+

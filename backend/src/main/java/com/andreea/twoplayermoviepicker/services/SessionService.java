@@ -29,6 +29,18 @@ public class SessionService {
     private final PlayerRepository playerRepository;
     private final TmdbService tmdbService;
 
+    /**
+     * Creates a new room based on the provided request. The method validates the provided seed,
+     * ensures the player session ID and seed do not already exist, and creates a new session
+     * with the specified seed and player information. If the seed or player session ID is invalid
+     * or already exists, a bad request response is returned. Otherwise, the created session is persisted
+     * and a list of movies retrieved from the TMDb service is returned.
+     *
+     * @param request the request containing details such as seed, language, and player session ID
+     *                required for creating the room
+     * @return a {@link ResponseEntity} containing the list of {@link MovieResponse} if the room
+     *         is successfully created, or a bad request response if validation fails
+     */
     public ResponseEntity<List<MovieResponse>> createRoom(RoomRequest request) {
         if (!isSeedValid(request.seed())) {
             log.warn("Invalid seed provided: {}", request.seed());
@@ -64,6 +76,16 @@ public class SessionService {
         return tmdbService.getRandomMoviesFromDiscover(request.language(), request.seed());
     }
 
+    /**
+     * Allows a player to join an existing room based on the provided room request details.
+     * Validates the request data, checks the room's availability, and adds the player to the room if all conditions are met.
+     *
+     * @param request The request object containing details about the room to join, including the seed, player session ID,
+     *                and language preferences.
+     * @return A ResponseEntity containing a list of MovieResponse objects that are randomly retrieved
+     *         based on the room's seed and language preferences. Returns a bad request or not found response
+     *         based on validation or room availability.
+     */
     public ResponseEntity<List<MovieResponse>> joinRoom(RoomRequest request) {
         if (!isSeedValid(request.seed())) {
             log.warn("Invalid seed provided: {}", request.seed());
@@ -101,6 +123,16 @@ public class SessionService {
         return tmdbService.getRandomMoviesFromDiscover(request.language(), request.seed());
     }
 
+    /**
+     * Fetches more movies based on the provided room request by validating the session
+     * and player information, determining the next seed, and invoking the appropriate
+     * third-party service to retrieve random movie recommendations.
+     *
+     * @param request the room request containing necessary information, such as session and
+     *                language details, to retrieve more movies
+     * @return a ResponseEntity containing a list of movie responses if successful, or an
+     *         appropriate error response if validation fails or an error occurs
+     */
     public ResponseEntity<List<MovieResponse>> fetchMoreMovies(RoomRequest request) {
         Optional<Map.Entry<Session, Player>> result = validateAndFetch(request);
         if (result.isEmpty()) {
@@ -138,7 +170,19 @@ public class SessionService {
         return tmdbService.getRandomMoviesFromDiscover(request.language(), newSeed);
     }
 
-
+    /**
+     * Adds the specified movie to the "likes" of the player issuing the request and checks
+     * whether it is a common like between the player and another player in the same session.
+     * Updates the session and player data accordingly.
+     *
+     * @param request the request containing the session ID, player ID, and movie ID to be added
+     *                to the player's likes
+     * @return a ResponseEntity containing a Boolean:
+     *         - true if the movie is a common like between the two players in the session,
+     *           meaning the other player has already liked the same movie,
+     *         - false otherwise,
+     *         - or a response with appropriate HTTP status codes if validation or processing fails
+     */
     public ResponseEntity<Boolean> addToLikesAndReturnIsCommon(LikeRequest request) {
         Optional<Map.Entry<Session, Player>> result = validateAndFetch(request);
         if (result.isEmpty()) {
@@ -179,6 +223,13 @@ public class SessionService {
         return ResponseEntity.ok(false);
     }
 
+    /**
+     * Determines whether a player can rejoin a session based on their session ID.
+     *
+     * @param playerSessionId the unique identifier associated with the player's session
+     * @return a ResponseEntity containing a Boolean value:
+     *         true if the player can rejoin, false otherwise
+     */
     public ResponseEntity<Boolean> canPlayerRejoin(String playerSessionId) {
         Optional<Player> optionalPlayer = playerRepository.findByPlayerSessionId(playerSessionId);
         if (optionalPlayer.isEmpty()) {

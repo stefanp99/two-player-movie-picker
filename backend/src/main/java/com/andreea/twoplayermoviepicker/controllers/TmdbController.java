@@ -17,6 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class TmdbController {
     private final TmdbService tmdbService;
 
+    /**
+     * Retrieves the YouTube trailer for a specific movie in the specified language.
+     *
+     * @param movieId the unique identifier of the movie for which the trailer is to be fetched
+     * @param language the language code in which the trailer is requested
+     * @return a ResponseEntity containing the URL of the YouTube trailer as a string,
+     *         or an appropriate error response if the trailer cannot be found
+     */
     @GetMapping("youtube-trailer/{movieId}/{language}")
     public ResponseEntity<String> getYoutubeTrailer(@PathVariable Integer movieId, @PathVariable String language) {
         return tmdbService.getYoutubeTrailer(movieId, language);
