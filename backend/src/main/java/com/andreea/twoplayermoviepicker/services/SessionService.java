@@ -39,7 +39,7 @@ public class SessionService {
      * @param request the request containing details such as seed, language, and player session ID
      *                required for creating the room
      * @return a {@link ResponseEntity} containing the list of {@link MovieResponse} if the room
-     *         is successfully created, or a bad request response if validation fails
+     * is successfully created, or a bad request response if validation fails
      */
     public ResponseEntity<List<MovieResponse>> createRoom(RoomRequest request) {
         if (!isSeedValid(request.seed())) {
@@ -83,16 +83,12 @@ public class SessionService {
      * @param request The request object containing details about the room to join, including the seed, player session ID,
      *                and language preferences.
      * @return A ResponseEntity containing a list of MovieResponse objects that are randomly retrieved
-     *         based on the room's seed and language preferences. Returns a bad request or not found response
-     *         based on validation or room availability.
+     * based on the room's seed and language preferences. Returns a bad request or not found response
+     * based on validation or room availability.
      */
     public ResponseEntity<List<MovieResponse>> joinRoom(RoomRequest request) {
         if (!isSeedValid(request.seed())) {
             log.warn("Invalid seed provided: {}", request.seed());
-            return ResponseEntity.badRequest().build();
-        }
-        if (playerSessionExists(request.playerSessionId())) {
-            log.warn("Player session id {} already exists", request.playerSessionId());
             return ResponseEntity.badRequest().build();
         }
         if (!firstSeedExists(request.seed())) {
@@ -108,6 +104,17 @@ public class SessionService {
         if (session.getPlayers().size() >= 2) {//TODO: in the future expand for > 2 players
             log.warn("Session with seed {} already has 2 players", request.seed());
             return ResponseEntity.badRequest().build();
+        }
+
+        if (playerSessionExists(request.playerSessionId())) {
+            log.info("Player session id {} already exists. Trying to move it to the room", request.playerSessionId());
+            Player player = findPlayerBySessionId(request.playerSessionId());
+            session.addPlayer(player);
+            player.setSession(session);
+            player.setUpdatedAt(LocalDateTime.now());
+            sessionRepository.save(session);
+            log.info("Player session id {} moved to the room with ID {}", request.playerSessionId(), session.getId());
+            return tmdbService.getRandomMoviesFromDiscover(request.language(), request.seed());
         }
 
         Player player = Player.builder()
@@ -131,7 +138,7 @@ public class SessionService {
      * @param request the room request containing necessary information, such as session and
      *                language details, to retrieve more movies
      * @return a ResponseEntity containing a list of movie responses if successful, or an
-     *         appropriate error response if validation fails or an error occurs
+     * appropriate error response if validation fails or an error occurs
      */
     public ResponseEntity<List<MovieResponse>> fetchMoreMovies(RoomRequest request) {
         Optional<Map.Entry<Session, Player>> result = validateAndFetch(request);
@@ -178,10 +185,10 @@ public class SessionService {
      * @param request the request containing the session ID, player ID, and movie ID to be added
      *                to the player's likes
      * @return a ResponseEntity containing a Boolean:
-     *         - true if the movie is a common like between the two players in the session,
-     *           meaning the other player has already liked the same movie,
-     *         - false otherwise,
-     *         - or a response with appropriate HTTP status codes if validation or processing fails
+     * - true if the movie is a common like between the two players in the session,
+     * meaning the other player has already liked the same movie,
+     * - false otherwise,
+     * - or a response with appropriate HTTP status codes if validation or processing fails
      */
     public ResponseEntity<Boolean> addToLikesAndReturnIsCommon(LikeRequest request) {
         Optional<Map.Entry<Session, Player>> result = validateAndFetch(request);
@@ -228,7 +235,7 @@ public class SessionService {
      *
      * @param playerSessionId the unique identifier associated with the player's session
      * @return a ResponseEntity containing a Boolean value:
-     *         true if the player can rejoin, false otherwise
+     * true if the player can rejoin, false otherwise
      */
     public ResponseEntity<Boolean> canPlayerRejoin(String playerSessionId) {
         Optional<Player> optionalPlayer = playerRepository.findByPlayerSessionId(playerSessionId);
