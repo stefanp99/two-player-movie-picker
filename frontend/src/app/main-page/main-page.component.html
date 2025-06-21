@@ -1,62 +1,49 @@
-<mat-accordion class="accordition-panels" multi>
+<!-- Show only movie card when initialMovies are loaded -->
+<ng-container *ngIf="initialMovies.length; else showRoomPanels">
+    <app-movie-card [movies]="initialMovies" [seed]="seed"></app-movie-card>
+</ng-container>
 
-    <!-- Panel for creating a new room -->
-    <mat-expansion-panel expanded="true">
-        <mat-expansion-panel-header>
-            <mat-panel-title>Create Room</mat-panel-title>
-            <mat-panel-description>
-                Create a Room
-            </mat-panel-description>
-        </mat-expansion-panel-header>
+<ng-template #showRoomPanels>
+    <mat-accordion class="accordition-panels" multi>
 
-        <!-- TODO: Add filters for genre, popularity, language -->
-        <form class="seed-form">
-            <!-- Generates a random 4-character room seed and starts a session -->
-            <button mat-raised-button color="primary" type="submit" (click)="generateSeed()">
-                Generate Room
-            </button>
+        <!-- Panel for creating a new room -->
+        <mat-expansion-panel expanded="true">
+            <mat-expansion-panel-header>
+                <mat-panel-title>Create Room</mat-panel-title>
+                <mat-panel-description>Create a Room</mat-panel-description>
+            </mat-expansion-panel-header>
 
-            <!-- Allows player to rejoin if a session is still active -->
-            <button mat-raised-button *ngIf="canPlayerRejoin === true" (click)="rejoinRoom()">
-                Rejoin room
-            </button>
-        </form>
-    </mat-expansion-panel>
+            <form class="seed-form">
+                <button mat-raised-button color="primary" type="submit" (click)="generateSeed()">
+                    Generate Room
+                </button>
 
-    <!-- Panel for joining an existing room using a seed -->
-    <mat-expansion-panel expanded="true">
-        <mat-expansion-panel-header>
-            <mat-panel-title>Join Room</mat-panel-title>
-            <mat-panel-description>
-                Join a Room
-            </mat-panel-description>
-        </mat-expansion-panel-header>
+                <button mat-raised-button *ngIf="canPlayerRejoin === true" (click)="rejoinRoom()">
+                    Rejoin room
+                </button>
+            </form>
+        </mat-expansion-panel>
 
-        <!-- Reactive form for entering the room seed -->
-        <form [formGroup]="seedForm" (ngSubmit)="inputSeed()" class="seed-form">
-            <mat-form-field appearance="fill">
-                <mat-label>Enter Room Seed (4 characters)</mat-label>
+        <!-- Panel for joining an existing room using a seed -->
+        <mat-expansion-panel expanded="true">
+            <mat-expansion-panel-header>
+                <mat-panel-title>Join Room</mat-panel-title>
+                <mat-panel-description>Join a Room</mat-panel-description>
+            </mat-expansion-panel-header>
 
-                <!-- Converts input to uppercase and strips non-alphanumeric characters -->
-                <input matInput formControlName="seed" maxlength="4" (input)="formatInput()" placeholder="A1B2" />
+            <form [formGroup]="seedForm" (ngSubmit)="inputSeed()" class="seed-form">
+                <mat-form-field appearance="fill">
+                    <mat-label>Enter Room Seed (4 characters)</mat-label>
+                    <input matInput formControlName="seed" maxlength="4" (input)="formatInput()" placeholder="A1B2" />
+                    <mat-error *ngIf="seedForm.controls['seed'].invalid">
+                        Must be 4 alphanumeric characters.
+                    </mat-error>
+                </mat-form-field>
 
-                <!-- Validation message for invalid seed input -->
-                <mat-error *ngIf="seedForm.controls['seed'].invalid">
-                    Must be 4 alphanumeric characters.
-                </mat-error>
-            </mat-form-field>
-
-            <!-- Disabled if form is invalid -->
-            <button mat-raised-button color="primary" type="submit" [disabled]="seedForm.invalid">
-                Submit
-            </button>
-        </form>
-    </mat-expansion-panel>
-</mat-accordion>
-
-<br />
-<mat-divider></mat-divider>
-<br />
-
-<!-- Displays movie card component once movies are loaded -->
-<app-movie-card *ngIf="this.initialMovies.length" [movies]="this.initialMovies" [seed]="this.seed"></app-movie-card>
+                <button mat-raised-button color="primary" type="submit" [disabled]="seedForm.invalid">
+                    Submit
+                </button>
+            </form>
+        </mat-expansion-panel>
+    </mat-accordion>
+</ng-template>

@@ -18,7 +18,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "${FRONTEND_IP}")
 @RestController
 @RequestMapping("/api/v1/session")
 public class SessionController {

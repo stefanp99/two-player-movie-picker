@@ -3,7 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDividerModule } from '@angular/material/divider';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -26,7 +25,6 @@ import { SessionService } from '../session.service';
     MatIconModule,
     MatButtonModule,
     MatExpansionModule,
-    MatDividerModule,
 
     MovieCardComponent
   ],

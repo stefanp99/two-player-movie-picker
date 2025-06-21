@@ -2,7 +2,7 @@ package com.andreea.twoplayermoviepicker.utils;
 
 public class Constants {
     public static final String IMDB_TITLE_BASE_URL = "https://www.imdb.com/title/";
-    public static final String TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/original/";
+    public static final String TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/original";
     public static final String YOUTUBE_VIDEO_BASE_URL = "https://www.youtube.com/embed/";
     public static final String TMDB_MOVIE_PAGE_BASE_URL = "https://www.themoviedb.org/movie/";
     public static final Integer TMDB_DISCOVER_PAGE_SIZE = 20;
