@@ -36,6 +36,7 @@ export class MovieCardComponent {
   @Input() seed: string = '';
   index: number = 0;
   showMatchAnimation = false;
+  likedMovieIds: number[] = [];
 
   constructor(private http: HttpClient, private dialog: MatDialog, private sessionService: SessionService) {
     this.index = this.sessionService.getIndex();
@@ -59,6 +60,8 @@ export class MovieCardComponent {
     }).subscribe({
       next: response => {
         console.log('Response: ' + response);
+        this.likedMovieIds.push(movieId);
+        this.sessionService.setLiked(this.likedMovieIds);
         if (response === true) {
           this.triggerMatchAnimation(() => {
             this.skipNext();
@@ -148,6 +151,4 @@ export class MovieCardComponent {
       });
     }, 250); // every 250ms
   }
-
-
 }

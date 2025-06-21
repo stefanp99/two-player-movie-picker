@@ -43,6 +43,14 @@ export class SessionService {
         return localStorage.getItem('seed') || '';
     }
 
+    setLiked(movieIds: number[]) {
+        localStorage.setItem('liked', JSON.stringify(movieIds));
+    }
+
+    getLiked(): number[] {
+        return JSON.parse(localStorage.getItem('liked') || '[]');
+    }
+
     clearAll() {
         localStorage.clear();
     }

@@ -74,29 +74,31 @@ public class SessionService {
             return ResponseEntity.badRequest().build();
         }
         if (!firstSeedExists(request.seed())) {
+            log.warn("Seed {} does not exist", request.seed());
             return ResponseEntity.notFound().build();
         }
 
-        if (firstSeedExists(request.seed())) {
-            Session session = findSessionBySeed(request.seed());
-            if (session == null) {
-                return ResponseEntity.notFound().build();
-            }
-            Player player = Player.builder()
-                    .playerSessionId(request.playerSessionId())
-                    .createdAt(LocalDateTime.now())
-                    .seedIndex(0)
-                    .build();
-            session.addPlayer(player);
-            sessionRepository.save(session);
-
-            log.info("Added new player with session id {} to session with id {}", request.playerSessionId(), session.getId());
-
-            return tmdbService.getRandomMoviesFromDiscover(request.language(), request.seed());
-
+        Session session = findSessionBySeed(request.seed());
+        if (session == null) {
+            log.warn("Session with seed {} not found", request.seed());
+            return ResponseEntity.notFound().build();
+        }
+        if (session.getPlayers().size() >= 2) {//TODO: in the future expand for > 2 players
+            log.warn("Session with seed {} already has 2 players", request.seed());
+            return ResponseEntity.badRequest().build();
         }
 
-        return ResponseEntity.notFound().build();
+        Player player = Player.builder()
+                .playerSessionId(request.playerSessionId())
+                .createdAt(LocalDateTime.now())
+                .seedIndex(0)
+                .build();
+        session.addPlayer(player);
+        sessionRepository.save(session);
+
+        log.info("Added new player with session id {} to session with id {}", request.playerSessionId(), session.getId());
+
+        return tmdbService.getRandomMoviesFromDiscover(request.language(), request.seed());
     }
 
     public ResponseEntity<List<MovieResponse>> fetchMoreMovies(RoomRequest request) {
@@ -160,9 +162,9 @@ public class SessionService {
 
         Player otherPlayer = findOtherPlayerInSession(player, session);
         if (otherPlayer == null) {
-            log.error("No other player found in session {}. Current player session ID {}",
+            log.warn("No other player found in session {}. Current player session ID {}",
                     session.getId(), player.getPlayerSessionId());
-            return ResponseEntity.internalServerError().build();
+            return ResponseEntity.ok(false);
         }
 
         if (otherPlayer.getLikes().contains(movieId)) {
