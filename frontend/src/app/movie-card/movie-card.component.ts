@@ -113,8 +113,8 @@ export class MovieCardComponent {
           // Show trailer if found
           this.dialog.open(TrailerDialogComponent, {
             data: ytTrailer,
-            width: '50vw',
-            height: '50vh',
+            width: '95vw',
+            height: '40vh',
           });
         } else {
           // Fallback dialog if no trailer
