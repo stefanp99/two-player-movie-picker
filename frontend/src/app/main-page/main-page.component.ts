@@ -135,12 +135,18 @@ export class MainPageComponent implements OnInit {
     this.seed = this.sessionService.getSeed();
   }
 
-  formatInput(): void {
+  formatInput() {
     // Enforce uppercase alphanumeric input without special characters
     const control = this.seedForm.get('seed');
     if (control) {
       const formatted = (control.value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
       control.setValue(formatted, { emitEvent: false });
     }
+  }
+
+  onReturn() {
+    this.initialMovies = [];
+    this.seedForm.reset();
+    this.canPlayerRejoin = true;
   }
 }

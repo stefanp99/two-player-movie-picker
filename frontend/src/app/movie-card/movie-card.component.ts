@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
@@ -34,10 +34,14 @@ import { TrailerDialogComponent } from './trailer-dialog.component';
 export class MovieCardComponent {
   @Input() movies: Movie[] = [];
   @Input() seed: string = '';
+
+  @Output() return = new EventEmitter<void>();
+
   index: number = 0;
   showMatchAnimation = false;
   likedMovieIds: number[] = [];
   commonMovies: Movie[] = [];
+  displayBigMovieCard: boolean = false;
 
   constructor(private http: HttpClient, private dialog: MatDialog, private sessionService: SessionService) {
     this.index = this.sessionService.getIndex(); // Restore index from session if available
@@ -46,6 +50,7 @@ export class MovieCardComponent {
   skipNext() {
     this.index++;
     this.sessionService.setIndex(this.index);
+    this.displayBigMovieCard = false;
 
     this.getCommonLikes();
 
@@ -64,7 +69,6 @@ export class MovieCardComponent {
       "movieId": movieId
     }).subscribe({
       next: response => {
-        this.getCommonLikes();
         this.likedMovieIds.push(movieId);
         this.sessionService.setLiked(this.likedMovieIds);
 
@@ -148,6 +152,14 @@ export class MovieCardComponent {
     const url = `${environment.apiBaseUrl}/api/v1/tmdb/youtube-trailer/${movieId}/en-US`; // TODO: add lang config
 
     return this.http.get(url, { responseType: 'text' }); // Returns plain text (YouTube URL)
+  }
+
+  back() {
+    this.return.emit();
+  }
+
+  onClickShowCard() {
+    this.displayBigMovieCard = true;
   }
 
   triggerMatchAnimation(onComplete: () => void) {

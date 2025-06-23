@@ -1,71 +1,116 @@
 <div class="center-div">
-    <mat-card class="movie-card" [ngStyle]="{
-    'background-image': 'url(' + movies.at(index)?.backDropUrl + ')'
-  }"> <!-- Dynamically set background image from current movie -->
+    <div *ngIf="!displayBigMovieCard">
+        <div class="top-bar">
+            <button mat-icon-button color="primary" (click)="back()" aria-label="Go Back">
+                <mat-icon>arrow_back</mat-icon>
+            </button>
+            <span class="room-seed">Room: {{ seed }}</span>
+        </div>
 
-        <mat-card-header class="text-overlay">
-            <mat-card-title-group>
-                <mat-card-subtitle>Room Seed: {{seed}}</mat-card-subtitle>
-                <mat-card-title>{{movies.at(index)?.title}}</mat-card-title>
-                <mat-card-subtitle>{{movies.at(index)?.tagline}}</mat-card-subtitle>
+        <mat-card class="preview-movie-card"
+            [ngStyle]="{'background-image': 'url(' + movies.at(index)?.backDropUrl + ')'}" (click)='onClickShowCard()'>
+            <div class="preview-overlay">
+                <div class="preview-header">
+                    <h2>{{ movies.at(index)?.title }}</h2>
+                    <small>{{ movies.at(index)?.releaseDate | date: 'yyyy' }}</small>
+                    <p class="tagline">{{ movies.at(index)?.tagline }}</p>
+                </div>
 
-                <!-- Movie poster displayed next to title -->
-                <img mat-card-lg-image [src]="movies.at(index)?.posterUrl" alt="Poster URL">
-            </mat-card-title-group>
-        </mat-card-header>
+                <div class="preview-meta">
+                    <span>⭐ {{ movies.at(index)?.voteAverage | number: '1.0-2'}}</span>
+                    <span>🎟️ {{ movies.at(index)?.voteCount | number: '':'en-US' }} votes</span>
+                </div>
 
-        <mat-card-content class="text-overlay">
-            <p>{{movies.at(index)?.overview}}</p>
+                <mat-chip-set aria-label="Movie genres" class="genre-chips">
+                    <mat-chip *ngFor="let genre of movies.at(index)?.genres">{{ genre.name }}</mat-chip>
+                </mat-chip-set>
 
-            <p><strong>Rating:</strong> {{movies.at(index)?.voteAverage}} ({{movies.at(index)?.voteCount}} votes)</p>
-
-            <p><strong>Popularity:</strong> {{movies.at(index)?.popularity}}</p>
-
-            <p><strong>Release Date:</strong> {{movies.at(index)?.releaseDate | date}}</p>
-
-            <p><strong>Runtime:</strong> {{movies.at(index)?.runtime}} minutes</p>
-
-            <!-- Safely joins array of spoken languages -->
-            <p><strong>Languages:</strong> {{movies.at(index)?.spokenLanguages?.join(', ')}}</p>
-
-            <p><strong>Status:</strong> {{movies.at(index)?.status}}</p>
-
-            <div class="button-row">
-                <!-- External links shown only if URLs exist -->
-                <a *ngIf="movies.at(index)?.imdbUrl" mat-raised-button color="accent" [href]="movies.at(index)?.imdbUrl"
-                    target="_blank" class="redirect-buttons">
-                    <img src="/imdb.ico" alt="IMDb" style="height: 32px;" />
-                </a>
-                <a *ngIf="movies.at(index)?.tmdbUrl" mat-raised-button [href]="movies.at(index)?.tmdbUrl"
-                    target="_blank" class="redirect-buttons">
-                    <img src="/tmdb.ico" alt="TMDb" style="height: 32px;" />
-                </a>
-                <!-- Opens trailer dialog using movie ID -->
-                <a mat-raised-button (click)="openYoutubeTrailerDialog(movies.at(index)?.id!)" class="redirect-buttons">
-                    <img src="/youtube.ico" alt="YouTube" style="height: 32px;" />
-                </a>
+                <mat-card-actions class="preview-actions">
+                    <button mat-mini-fab color="warn" (click)="skipNext(); $event.stopPropagation()" aria-label="Skip">
+                        <mat-icon>skip_next</mat-icon>
+                    </button>
+                    <button mat-mini-fab color="accent"
+                        (click)="favorite(movies.at(index)?.id!); $event.stopPropagation()" aria-label="Like">
+                        <mat-icon>favorite</mat-icon>
+                    </button>
+                </mat-card-actions>
             </div>
-        </mat-card-content>
+        </mat-card>
+    </div>
 
-        <mat-card-footer class="text-overlay">
-            <!-- Dynamically rendered genre chips -->
-            <mat-chip-set aria-label="Movie genres">
-                <mat-chip *ngFor="let genre of movies.at(index)?.genres">{{genre.name}}</mat-chip>
-            </mat-chip-set>
-        </mat-card-footer>
 
-        <mat-card-actions class="action-buttons">
-            <!-- Skip to next movie -->
-            <button mat-fab color="warn" aria-label="Skip Button" (click)="skipNext()">
-                <mat-icon>skip_next</mat-icon>
-            </button>
+    <div *ngIf="displayBigMovieCard">
+        <mat-card class="movie-card" [ngStyle]="{'background-image': 'url(' + movies.at(index)?.backDropUrl + ')'}">
+            <div class="top-bar text-overlay">
+                <button mat-icon-button color="primary" (click)="displayBigMovieCard = false" aria-label="Back">
+                    <mat-icon>close</mat-icon>
+                </button>
+                <h2 class="room-seed">Room: {{ seed }}</h2>
+            </div>
+            <!-- Dynamically set background image from current movie -->
 
-            <!-- Mark movie as favorite -->
-            <button mat-fab color="accent" aria-label="Like Button" (click)="favorite(movies.at(index)?.id!)">
-                <mat-icon>favorite</mat-icon>
-            </button>
-        </mat-card-actions>
-    </mat-card>
+            <mat-card-header class="text-overlay">
+                <mat-card-title-group>
+                    <mat-card-title>{{movies.at(index)?.title}}</mat-card-title>
+                    <mat-card-subtitle>{{movies.at(index)?.tagline}}</mat-card-subtitle>
+
+                    <!-- Movie poster displayed next to title -->
+                    <img mat-card-lg-image [src]="movies.at(index)?.posterUrl" alt="Poster URL">
+                </mat-card-title-group>
+            </mat-card-header>
+
+            <mat-card-content class="text-overlay">
+                <p class="overview">{{movies.at(index)?.overview}}</p>
+
+                <div class="details-grid">
+                    <p>⭐ {{ movies.at(index)?.voteAverage | number: '1.0-2' }}</p>
+                    <p>🎟️ {{ movies.at(index)?.voteCount | number: '':'en-US'}} votes</p>
+                    <p><strong>Popularity:</strong> {{movies.at(index)?.popularity}}</p>
+                    <p><strong>Release Date:</strong> {{movies.at(index)?.releaseDate | date}}</p>
+                    <p><strong>Runtime:</strong> {{movies.at(index)?.runtime}} minutes</p>
+                    <!-- Safely joins array of spoken languages -->
+                    <p><strong>Languages:</strong> {{movies.at(index)?.spokenLanguages?.join(', ')}}</p>
+                    <p><strong>Status:</strong> {{movies.at(index)?.status}}</p>
+                </div>
+
+                <div class="button-row">
+                    <!-- External links shown only if URLs exist -->
+                    <a *ngIf="movies.at(index)?.imdbUrl" mat-raised-button color="accent"
+                        [href]="movies.at(index)?.imdbUrl" target="_blank" class="redirect-buttons">
+                        <img src="/imdb.ico" alt="IMDb" style="width: 48px;" />
+                    </a>
+                    <a *ngIf="movies.at(index)?.tmdbUrl" mat-raised-button [href]="movies.at(index)?.tmdbUrl"
+                        target="_blank" class="redirect-buttons">
+                        <img src="/tmdb.ico" alt="TMDb" style="width: 48px;" />
+                    </a>
+                    <!-- Opens trailer dialog using movie ID -->
+                    <a mat-raised-button (click)="openYoutubeTrailerDialog(movies.at(index)?.id!)"
+                        class="redirect-buttons">
+                        <img src="/youtube.ico" alt="YouTube" style="width: 48px;" />
+                    </a>
+                </div>
+            </mat-card-content>
+
+            <mat-card-footer class="text-overlay">
+                <!-- Dynamically rendered genre chips -->
+                <mat-chip-set aria-label="Movie genres">
+                    <mat-chip *ngFor="let genre of movies.at(index)?.genres">{{genre.name}}</mat-chip>
+                </mat-chip-set>
+            </mat-card-footer>
+
+            <mat-card-actions class="action-buttons">
+                <!-- Skip to next movie -->
+                <button mat-fab color="warn" aria-label="Skip Button" (click)="skipNext()">
+                    <mat-icon>skip_next</mat-icon>
+                </button>
+
+                <!-- Mark movie as favorite -->
+                <button mat-fab color="accent" aria-label="Like Button" (click)="favorite(movies.at(index)?.id!)">
+                    <mat-icon>favorite</mat-icon>
+                </button>
+            </mat-card-actions>
+        </mat-card>
+    </div>
 </div>
 
 <!-- Overlay shown when there's a match -->
