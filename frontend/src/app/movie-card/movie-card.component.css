@@ -7,7 +7,7 @@
 
 .movie-card {
     background-color: rgba(183, 0, 255, 0.1);
-
+    width: 75vw;
     margin: auto;
     display: flex;
     flex-direction: column;
@@ -60,6 +60,9 @@
 
 .match-poster {
     width: 50vw;
+    /* default for small screens */
+    max-width: 400px;
+    /* optional limit */
     border-radius: 16px;
     box-shadow: 0 0 20px white;
     transform: scale(0.8);
@@ -72,6 +75,23 @@
     font-size: 32px;
     font-weight: bold;
     animation: fadeIn 1.5s ease forwards;
+}
+
+
+/* tablets/desktops */
+@media (min-width: 768px) {
+    .match-poster {
+        width: 30vw;
+        max-width: 300px;
+    }
+}
+
+/* large desktops */
+@media (min-width: 1200px) {
+    .match-poster {
+        width: 20vw;
+        max-width: 250px;
+    }
 }
 
 @keyframes fadeInOut {

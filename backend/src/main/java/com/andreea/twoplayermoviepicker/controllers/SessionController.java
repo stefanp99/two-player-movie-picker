@@ -86,4 +86,16 @@ public class SessionController {
     public ResponseEntity<Boolean> canPlayerRejoin(@RequestParam String playerSessionId) {
         return sessionService.canPlayerRejoin(playerSessionId);
     }
+
+    /**
+     * Retrieves a list of movie IDs that are commonly liked by both players in the specified session.
+     *
+     * @param playerSessionId the unique session identifier of the player for whom the common likes are being fetched
+     * @return a ResponseEntity containing a list of Integer values representing the IDs of movies
+     *         commonly liked by both players, or an appropriate error response if the session or player is not found
+     */
+    @GetMapping("common-likes")
+    public ResponseEntity<List<Integer>> getCommonLikes(@RequestParam String playerSessionId) {
+        return sessionService.getCommonLikes(playerSessionId);
+    }
 }

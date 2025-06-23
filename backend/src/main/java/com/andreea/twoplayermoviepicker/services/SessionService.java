@@ -252,6 +252,39 @@ public class SessionService {
         return ResponseEntity.ok(true);
     }
 
+    /**
+     * Retrieves a list of common likes for a given player's session.
+     *
+     * @param playerSessionId The unique identifier of the player's session.
+     * @return A ResponseEntity containing a list of integers representing common likes
+     *         if the session is valid, or a 404 NOT FOUND response if the session is invalid or not found.
+     */
+    public ResponseEntity<List<Integer>> getCommonLikes(String playerSessionId) {
+        Optional<Map.Entry<Session, Player>> result = validateAndFetch(playerSessionId);
+        if (result.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Session session = result.get().getKey();
+        return ResponseEntity.ok(session.getCommonLikes().stream()
+                .map(Integer::parseInt)
+                .toList());
+    }
+
+    private Optional<Map.Entry<Session, Player>> validateAndFetch(String playerSessionId) {
+        Optional<Player> optionalPlayer = playerRepository.findByPlayerSessionId(playerSessionId);
+        if (optionalPlayer.isEmpty()) {
+            log.warn("Player with session id {} not found", playerSessionId);
+            return Optional.empty();
+        }
+        Player player = optionalPlayer.get();
+        if (player.getSession() == null) {
+            log.warn("Player with session id {} has no session", playerSessionId);
+            return Optional.empty();
+        }
+        Session session = player.getSession();
+        return validateCommon(session.getSeedSequence().getFirst(), playerSessionId);
+    }
+
     private Optional<Map.Entry<Session, Player>> validateAndFetch(RoomRequest request) {
         return validateCommon(request.seed(), request.playerSessionId());
     }

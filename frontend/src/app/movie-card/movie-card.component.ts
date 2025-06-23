@@ -37,6 +37,7 @@ export class MovieCardComponent {
   index: number = 0;
   showMatchAnimation = false;
   likedMovieIds: number[] = [];
+  commonMovies: Movie[] = [];
 
   constructor(private http: HttpClient, private dialog: MatDialog, private sessionService: SessionService) {
     this.index = this.sessionService.getIndex(); // Restore index from session if available
@@ -45,6 +46,8 @@ export class MovieCardComponent {
   skipNext() {
     this.index++;
     this.sessionService.setIndex(this.index);
+
+    this.getCommonLikes();
 
     // Fetch more movies every 5 skips — value is hardcoded and flagged as TODO
     if (this.index % 5 == 0) { // TODO: check this value 5
@@ -61,6 +64,7 @@ export class MovieCardComponent {
       "movieId": movieId
     }).subscribe({
       next: response => {
+        this.getCommonLikes();
         this.likedMovieIds.push(movieId);
         this.sessionService.setLiked(this.likedMovieIds);
 
@@ -123,6 +127,22 @@ export class MovieCardComponent {
       }
     });
   }
+
+  getCommonLikes(): void {
+    const url = `${environment.apiBaseUrl}/api/v1/session/common-likes?playerSessionId=${this.sessionService.getSessionId()}`;
+
+    this.http.get<number[]>(url).subscribe({
+      next: response => {
+        this.commonMovies = response
+          .map(id => this.movies.find(movie => movie.id === id))//find movies by id
+          .filter((m): m is Movie => m !== undefined);//filter out the undefined
+      },
+      error: error => {
+        console.error('API Error:', error);
+      }
+    });
+  }
+
 
   getYoutubeTrailer(movieId: number): Observable<string> {
     const url = `${environment.apiBaseUrl}/api/v1/tmdb/youtube-trailer/${movieId}/en-US`; // TODO: add lang config

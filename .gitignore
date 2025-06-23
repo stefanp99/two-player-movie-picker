@@ -81,6 +81,7 @@ frontend/testem.log
 frontend/typings
 frontend/.editorconfig
 frontend/src/environments/environment.lan.ts
+postman_backup
 
 # ===========================
 # SYSTEM-WIDE
