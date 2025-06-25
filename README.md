@@ -36,9 +36,9 @@ A web app where two (or more) users can enter a room and swipe through randomly 
 Feature                         | Status   | Notes                                        |
 | ------------------------------- | -------- | -------------------------------------------- |
 | TMDB fetch logic with seeds     | Done   | Using discover pages + index-based batching  |
-| Database schema & persistence   | Next  | Store users, rooms, swipes                   |
-| Swipe logging per player        | Next  | Persist liked/skipped state                  |
-| Matching logic                  | Next  | Detect when 2+ users like the same movie     |
+| Database schema & persistence   | Done  | Store users, rooms, swipes                   |
+| Swipe logging per player        | Dond  | Persist liked/skipped state                  |
+| Matching logic                  | Done  | Detect when 2+ users like the same movie     |
 | Redis caching for TMDB results  | Next  | Required for deployment to prevent API abuse |
 | Frontend match UI               | Next  | Show when both users like the same movie     |
 | WebSockets or polling           | Later | Enable real-time updates between players     |
