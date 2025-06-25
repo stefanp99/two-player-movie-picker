@@ -6,11 +6,11 @@ A web app where two (or more) users can enter a room and swipe through randomly 
 
 - One player creates a room (a 4-character code is generated).
 - The second player joins using the same code.
-- Both players receive the **same randomized list of movies** (in different orders).
+- Both players receive the **same randomized list of movies**.
 - Swiping "like" or "skip" progresses through the shared list.
-- Every 5 swipes, a new batch of 5 movies is generated from TMDB using a seed system.
+- Every n swipes, a new batch of m movies is generated from TMDB using a seed system.
 - When two players like the same movie → It’s a Match!
-- The movie list is “endless” due to dynamic seed-based pagination.
+- The movie list is “endless” due to dynamic seed-based pagination. We could add a "limited" play style in the future.
   
 ## Tech Stack
 
