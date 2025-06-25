@@ -4,6 +4,8 @@
         <app-movie-card [movies]="initialMovies" [seed]="seed" (return)="onReturn()"></app-movie-card>
     </ng-container>
 
+    <mat-spinner *ngIf="isFetchingMovies"></mat-spinner>
+
     <ng-template #showRoomPanels>
         <mat-card class="seed-card" appearance="outlined">
 
@@ -43,7 +45,7 @@
                             style="color: rgb(255, 180, 171);">
                             Room Not Found!
                         </mat-hint>
-                        <mat-hint *ngIf="roomExists && seedForm.get('seed')?.value?.length === 4">
+                        <mat-hint *ngIf="roomExists && seedForm.get('seed')?.value?.length === 4" class="room-found">
                             Room Found
                         </mat-hint>
                     </mat-form-field>

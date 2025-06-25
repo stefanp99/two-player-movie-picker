@@ -14,8 +14,12 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
-.seed-card mat-card-title {
+mat-card-title {
     color: rgb(255, 171, 243) !important;
+}
+
+.room-found {
+    color: #9000ff !important;
 }
 
 .or-text {

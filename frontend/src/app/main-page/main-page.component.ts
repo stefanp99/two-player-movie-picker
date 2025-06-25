@@ -9,6 +9,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { environment } from '../../environments/environment';
 import { Movie } from '../models/movie.model';
 import { MovieCardComponent } from '../movie-card/movie-card.component';
@@ -29,6 +30,7 @@ import { SessionService } from '../session.service';
     MatExpansionModule,
     MatCardModule,
     MatDividerModule,
+    MatProgressSpinnerModule,
 
     MovieCardComponent
   ],
@@ -41,6 +43,7 @@ export class MainPageComponent implements OnInit {
   canPlayerRejoin: boolean = false;
   initialMovies: Movie[] = [];
   roomExists: boolean | undefined;
+  isFetchingMovies: boolean = false;
 
   seedForm: FormGroup;
 
@@ -79,6 +82,7 @@ export class MainPageComponent implements OnInit {
   createRoom() {
     this.sessionService.clearAll(); // Reset previous session data
     this.sessionService.setSessionId(); // Generate new session ID
+    this.isFetchingMovies = true;
 
     const url = `${environment.apiBaseUrl}/api/v1/session/create-room`;
 
@@ -92,6 +96,7 @@ export class MainPageComponent implements OnInit {
         this.sessionService.setMovies(this.initialMovies);
         this.sessionService.setSeed(this.seed);
         this.sessionService.setIndex(0); // Start from beginning
+        this.isFetchingMovies = false;
       },
       error: error => {
         console.error('API Error:', error);
@@ -101,6 +106,7 @@ export class MainPageComponent implements OnInit {
 
   joinRoom() {
     const url = `${environment.apiBaseUrl}/api/v1/session/join-room`;
+    this.isFetchingMovies = true;
 
     this.http.post<Movie[]>(url, {
       "seed": this.seed,
@@ -112,6 +118,7 @@ export class MainPageComponent implements OnInit {
         this.sessionService.setMovies(this.initialMovies);
         this.sessionService.setSeed(this.seed);
         this.sessionService.setIndex(0); // Reset index when joining
+        this.isFetchingMovies = false;
       },
       error: error => {
         console.error('API Error:', error);
