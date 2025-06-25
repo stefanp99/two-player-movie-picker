@@ -4,7 +4,7 @@ export interface Genre {
 }
 
 export interface Movie {
-    backDropUrl: string | null;
+    backdropUrl: string | null;
     genres: Genre[];
     id: number;
     imdbUrl: string;

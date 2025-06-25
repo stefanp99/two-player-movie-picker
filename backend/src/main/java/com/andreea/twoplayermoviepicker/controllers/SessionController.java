@@ -52,7 +52,7 @@ public class SessionController {
      * Fetches additional movies for a session based on the provided room details
      * and updates the player's seed index or generates a new seed if necessary.
      *
-     * @param request the request containing necessary details about the session including
+     * @param request the request containing the necessary details about the session, including
      *                the seed, player session ID, and language preferences
      * @return a ResponseEntity containing a list of MovieResponse objects representing
      *         the fetched movies or an appropriate error response in case of failure

@@ -7,8 +7,9 @@
             <span class="room-seed">Room: {{ seed }}</span>
         </div>
 
-        <mat-card class="preview-movie-card"
-            [ngStyle]="{'background-image': 'url(' + movies.at(index)?.backDropUrl + ')'}" (click)='onClickShowCard()'
+        <mat-card class="preview-movie-card" cdkDrag (cdkDragMoved)="onCardDragMove($event)"
+            (cdkDragEnded)="onCardDragEnded($event)"
+            [ngStyle]="{'background-image': 'url(' + movies.at(index)?.backdropUrl + ')'}" (click)='onClickShowCard()'
             tabindex="0" aria-label="Show movie details">
             <div class="preview-overlay">
                 <div class="preview-header">
@@ -31,15 +32,14 @@
             <button mat-mini-fab color="warn" (click)="skipNext(); $event.stopPropagation()" aria-label="Skip">
                 <mat-icon>skip_next</mat-icon>
             </button>
-            <button mat-mini-fab color="accent" (click)="favorite(movies.at(index)?.id!); $event.stopPropagation()"
-                aria-label="Like">
+            <button mat-mini-fab color="accent" (click)="favorite(); $event.stopPropagation()" aria-label="Like">
                 <mat-icon>favorite</mat-icon>
             </button>
         </mat-card-actions>
     </div>
 
     <div *ngIf="displayBigMovieCard">
-        <mat-card class="movie-card" [ngStyle]="{'background-image': 'url(' + movies.at(index)?.backDropUrl + ')'}">
+        <mat-card class="movie-card" [ngStyle]="{'background-image': 'url(' + movies.at(index)?.backdropUrl + ')'}">
             <div class="top-bar text-overlay">
                 <button mat-icon-button color="primary" (click)="displayBigMovieCard = false"
                     aria-label="Close details">
@@ -72,15 +72,15 @@
                     <a *ngIf="movies.at(index)?.imdbUrl" mat-raised-button color="accent"
                         [href]="movies.at(index)?.imdbUrl" target="_blank" class="redirect-buttons"
                         aria-label="IMDb page">
-                        <img src="/imdb.ico" alt="IMDb" style="width: 48px;"/>
+                        <img src="/imdb.ico" alt="IMDb" style="width: 48px;" />
                     </a>
                     <a *ngIf="movies.at(index)?.tmdbUrl" mat-raised-button [href]="movies.at(index)?.tmdbUrl"
                         target="_blank" class="redirect-buttons" aria-label="TMDb page">
-                        <img src="/tmdb.ico" alt="TMDb" style="width: 48px;"/>
+                        <img src="/tmdb.ico" alt="TMDb" style="width: 48px;" />
                     </a>
                     <a mat-raised-button (click)="openYoutubeTrailerDialog(movies.at(index)?.id!)"
                         class="redirect-buttons" aria-label="Watch trailer">
-                        <img src="/youtube.ico" alt="YouTube" style="width: 48px;"/>
+                        <img src="/youtube.ico" alt="YouTube" style="width: 48px;" />
                     </a>
                 </div>
             </mat-card-content>
@@ -95,7 +95,7 @@
                 <button mat-fab color="warn" aria-label="Skip" (click)="skipNext()">
                     <mat-icon>skip_next</mat-icon>
                 </button>
-                <button mat-fab color="accent" aria-label="Like" (click)="favorite(movies.at(index)?.id!)">
+                <button mat-fab color="accent" aria-label="Like" (click)="favorite()">
                     <mat-icon>favorite</mat-icon>
                 </button>
             </mat-card-actions>

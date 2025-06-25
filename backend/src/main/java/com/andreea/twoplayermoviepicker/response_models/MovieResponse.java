@@ -11,13 +11,13 @@ import static com.andreea.twoplayermoviepicker.utils.Constants.TMDB_IMAGE_BASE_U
 import static com.andreea.twoplayermoviepicker.utils.Constants.TMDB_MOVIE_PAGE_BASE_URL;
 
 @Builder
-public record MovieResponse(String backDropUrl, List<GenreResponse> genres, Integer id, String imdbUrl, String overview,
+public record MovieResponse(String backdropUrl, List<GenreResponse> genres, Integer id, String imdbUrl, String overview,
                             Double popularity, String posterUrl, String releaseDate, Integer runtime,
                             List<String> spokenLanguages, String status, String tagline, String title, String tmdbUrl,
                             String youtubeTrailer, Double voteAverage, Integer voteCount) {
     public static MovieResponse fromMovie(MovieDb movieDb) {
         return MovieResponse.builder()
-                .backDropUrl(movieDb.getBackdropPath() != null ? TMDB_IMAGE_BASE_URL.concat(movieDb.getBackdropPath()) : null)
+                .backdropUrl(movieDb.getBackdropPath() != null ? TMDB_IMAGE_BASE_URL.concat(movieDb.getBackdropPath()) : null)
                 .genres(movieDb.getGenres() != null ? movieDb.getGenres().stream().map(GenreResponse::fromGenre).toList() : null)
                 .id(movieDb.getId())
                 .imdbUrl(movieDb.getImdbID() != null ? IMDB_TITLE_BASE_URL.concat(movieDb.getImdbID()) : null)

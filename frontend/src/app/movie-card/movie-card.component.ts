@@ -14,6 +14,7 @@ import { Movie } from '../models/movie.model';
 import { SessionService } from '../session.service';
 import { NoTrailerDialogComponent } from './no-trailer-dialog.component';
 import { TrailerDialogComponent } from './trailer-dialog.component';
+import { CdkDragEnd, CdkDragEnter, CdkDragMove, CdkDragStart, DragDropModule } from '@angular/cdk/drag-drop';
 
 
 @Component({
@@ -27,6 +28,8 @@ import { TrailerDialogComponent } from './trailer-dialog.component';
     MatButtonModule,
     MatIconModule,
     MatDialogModule,
+
+    DragDropModule,
   ],
   templateUrl: './movie-card.component.html',
   styleUrl: './movie-card.component.css'
@@ -42,6 +45,10 @@ export class MovieCardComponent {
   likedMovieIds: number[] = [];
   commonMovies: Movie[] = [];
   displayBigMovieCard: boolean = false;
+  dragging = false;
+  heartsInterval: any = null;
+  skipsInterval: any = null;
+  currentConfettiOrigin: { x: number, y: number } | null = null;
 
   constructor(private http: HttpClient, private dialog: MatDialog, private sessionService: SessionService) {
     this.index = this.sessionService.getIndex(); // Restore index from session if available
@@ -60,8 +67,9 @@ export class MovieCardComponent {
     }
   }
 
-  favorite(movieId: number) {
-    const url = `${environment.apiBaseUrl}/api/v1/session/add-to-likes`
+  favorite() {
+    const url = `${environment.apiBaseUrl}/api/v1/session/add-to-likes`;
+    const movieId = this.movies.at(this.index)?.id!;
 
     this.http.post<Boolean>(url, {
       "seed": this.seed,
@@ -159,7 +167,97 @@ export class MovieCardComponent {
   }
 
   onClickShowCard() {
+    if (this.dragging) return;
     this.displayBigMovieCard = true;
+  }
+
+  onCardDragMove(event: CdkDragMove) {
+    this.dragging = true;
+    const x = event.distance.x;
+
+    // Use the actual pointer position for confetti origin
+    const pointerX = event.pointerPosition.x;
+    const pointerY = event.pointerPosition.y;
+
+    // Save latest pointer position as confetti origin (normalized 0-1)
+    this.currentConfettiOrigin = {
+      x: Math.min(Math.max(pointerX / window.innerWidth, 0), 1),
+      y: Math.min(Math.max(pointerY / window.innerHeight, 0), 1)
+    };
+
+    // Start hearts animation if swiping right and not already running
+    if (x > 150 && !this.heartsInterval) {
+      this.heartsInterval = setInterval(() => {
+        var scalar = 10;
+        var heart = confetti.shapeFromText({ text: '❤️', scalar });
+        confetti({
+          particleCount: 1,
+          spread: 90,
+          flat: true,
+          origin: this.currentConfettiOrigin ?? { x: 0.5, y: 0.5 },
+          shapes: [heart],
+          scalar
+        });
+      }, 250);
+    }
+
+    // Start skips animation if swiping left and not already running
+    if (x < -150 && !this.skipsInterval) {
+      this.skipsInterval = setInterval(() => {
+        var scalar = 10;
+        var cross = confetti.shapeFromText({ text: '❌', scalar });
+        confetti({
+          particleCount: 1,
+          spread: 90,
+          flat: true,
+          origin: this.currentConfettiOrigin ?? { x: 0.5, y: 0.5 },
+          shapes: [cross],
+          scalar
+        });
+      }, 250);
+    }
+
+    // Stop hearts animation if user drags back to center or left
+    if (x <= 150 && this.heartsInterval) {
+      clearInterval(this.heartsInterval);
+      this.heartsInterval = null;
+      confetti.reset();
+    }
+
+    // Stop skips animation if user drags back to center or right
+    if (x >= -150 && this.skipsInterval) {
+      clearInterval(this.skipsInterval);
+      this.skipsInterval = null;
+      confetti.reset();
+    }
+  }
+
+  onCardDragEnded(event: CdkDragEnd) {
+    const x = event.distance.x;
+    if (x > 150) {
+      // Swiped right (like)
+      this.favorite();
+    } else if (x < -150) {
+      // Swiped left (skip)
+      this.skipNext();
+    }
+    // Reset card position
+    event.source._dragRef.reset();
+
+    // Stop hearts animation if running
+    if (this.heartsInterval) {
+      clearInterval(this.heartsInterval);
+      this.heartsInterval = null;
+      confetti.reset();
+    }
+
+    if (this.skipsInterval) {
+      clearInterval(this.skipsInterval);
+      this.skipsInterval = null;
+      confetti.reset();
+    }
+
+    setTimeout(() => this.dragging = false, 0); // Reset after event loop
   }
 
   triggerMatchAnimation(onComplete: () => void) {
