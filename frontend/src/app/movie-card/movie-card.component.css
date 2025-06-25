@@ -1,12 +1,4 @@
 /* Layout Containers */
-.center-div {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: linear-gradient(135deg, #000000 0%, #9000ff 100%);
-}
-
 .top-bar {
     display: flex;
     align-items: center;

@@ -1,10 +1,28 @@
-.accordition-panels .mat-expansion-panel-header-description {
-    justify-content: space-between;
+.center-div {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
     align-items: center;
+    background: linear-gradient(135deg, #000000 0%, #9000ff 100%);
 }
 
-.accordition-panels .mat-mdc-form-field+.mat-mdc-form-field {
-    margin-left: 8px;
+.seed-card {
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.seed-card mat-card-title {
+    color: rgb(255, 171, 243) !important;
+}
+
+.or-text {
+    text-align: center;
+    margin: 16px 0;
+    font-weight: bold;
+    color: #9000ff;
 }
 
 .seed-form {

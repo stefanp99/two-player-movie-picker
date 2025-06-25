@@ -98,4 +98,15 @@ public class SessionController {
     public ResponseEntity<List<Integer>> getCommonLikes(@RequestParam String playerSessionId) {
         return sessionService.getCommonLikes(playerSessionId);
     }
+
+    /**
+     * Checks if a room exists based on the provided seed.
+     *
+     * @param seed the unique identifier used to determine if a room exists
+     * @return a ResponseEntity containing a Boolean value; true if the room exists, false otherwise
+     */
+    @GetMapping("room-exists")
+    public ResponseEntity<Boolean> doesRoomExist(@RequestParam String seed){
+        return sessionService.doesRoomExist(seed);
+    }
 }

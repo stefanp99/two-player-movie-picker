@@ -1,49 +1,59 @@
-<!-- Show only movie card when initialMovies are loaded -->
-<ng-container *ngIf="initialMovies.length; else showRoomPanels">
-    <app-movie-card [movies]="initialMovies" [seed]="seed" (return)="onReturn()"></app-movie-card>
-</ng-container>
+<div class="center-div">
+    <!-- Show only movie card when initialMovies are loaded -->
+    <ng-container *ngIf="initialMovies.length; else showRoomPanels">
+        <app-movie-card [movies]="initialMovies" [seed]="seed" (return)="onReturn()"></app-movie-card>
+    </ng-container>
 
-<ng-template #showRoomPanels>
-    <mat-accordion class="accordition-panels" multi>
+    <ng-template #showRoomPanels>
+        <mat-card class="seed-card" appearance="outlined">
 
-        <!-- Panel for creating a new room -->
-        <mat-expansion-panel expanded="true">
-            <mat-expansion-panel-header>
-                <mat-panel-title>Create Room</mat-panel-title>
-                <mat-panel-description>Create a Room</mat-panel-description>
-            </mat-expansion-panel-header>
+            <!-- Panel for creating a new room -->
+            <mat-card-header>
+                <mat-card-title>Create Room</mat-card-title>
+            </mat-card-header>
+            <mat-card-actions>
+                <form class="seed-form">
+                    <button mat-raised-button color="primary" type="submit" (click)="generateSeed()">
+                        Generate Room
+                    </button>
+                    <button mat-raised-button *ngIf="canPlayerRejoin === true" (click)="rejoinRoom()">
+                        Rejoin room
+                    </button>
+                </form>
+            </mat-card-actions>
 
-            <form class="seed-form">
-                <button mat-raised-button color="primary" type="submit" (click)="generateSeed()">
-                    Generate Room
-                </button>
+            <mat-divider></mat-divider>
+            <div class="or-text">OR</div>
+            <mat-divider></mat-divider>
 
-                <button mat-raised-button *ngIf="canPlayerRejoin === true" (click)="rejoinRoom()">
-                    Rejoin room
-                </button>
-            </form>
-        </mat-expansion-panel>
+            <!-- Panel for joining an existing room using a seed -->
+            <mat-card-header>
+                <mat-card-title>Join Room</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <form [formGroup]="seedForm" (ngSubmit)="inputSeed()" class="seed-form">
+                    <mat-form-field appearance="fill">
+                        <mat-label>Enter Room Seed (4 characters)</mat-label>
+                        <input matInput formControlName="seed" maxlength="4" (input)="formatInputAndCheckRoomExists()"
+                            placeholder="A1B2" />
+                        <mat-error *ngIf="seedForm.controls['seed'].invalid">
+                            Must be 4 alphanumeric characters.
+                        </mat-error>
+                        <mat-hint *ngIf="roomExists === false && seedForm.get('seed')?.value?.length === 4"
+                            style="color: rgb(255, 180, 171);">
+                            Room Not Found!
+                        </mat-hint>
+                        <mat-hint *ngIf="roomExists && seedForm.get('seed')?.value?.length === 4">
+                            Room Found
+                        </mat-hint>
+                    </mat-form-field>
 
-        <!-- Panel for joining an existing room using a seed -->
-        <mat-expansion-panel expanded="true">
-            <mat-expansion-panel-header>
-                <mat-panel-title>Join Room</mat-panel-title>
-                <mat-panel-description>Join a Room</mat-panel-description>
-            </mat-expansion-panel-header>
-
-            <form [formGroup]="seedForm" (ngSubmit)="inputSeed()" class="seed-form">
-                <mat-form-field appearance="fill">
-                    <mat-label>Enter Room Seed (4 characters)</mat-label>
-                    <input matInput formControlName="seed" maxlength="4" (input)="formatInput()" placeholder="A1B2" />
-                    <mat-error *ngIf="seedForm.controls['seed'].invalid">
-                        Must be 4 alphanumeric characters.
-                    </mat-error>
-                </mat-form-field>
-
-                <button mat-raised-button color="primary" type="submit" [disabled]="seedForm.invalid">
-                    Submit
-                </button>
-            </form>
-        </mat-expansion-panel>
-    </mat-accordion>
-</ng-template>
+                    <button mat-raised-button color="primary" type="submit"
+                        [disabled]="seedForm.invalid || !roomExists">
+                        Submit
+                    </button>
+                </form>
+            </mat-card-content>
+        </mat-card>
+    </ng-template>
+</div>

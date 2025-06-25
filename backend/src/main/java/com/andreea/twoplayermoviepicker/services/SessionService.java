@@ -257,7 +257,7 @@ public class SessionService {
      *
      * @param playerSessionId The unique identifier of the player's session.
      * @return A ResponseEntity containing a list of integers representing common likes
-     *         if the session is valid, or a 404 NOT FOUND response if the session is invalid or not found.
+     * if the session is valid, or a 404 NOT FOUND response if the session is invalid or not found.
      */
     public ResponseEntity<List<Integer>> getCommonLikes(String playerSessionId) {
         Optional<Map.Entry<Session, Player>> result = validateAndFetch(playerSessionId);
@@ -268,6 +268,19 @@ public class SessionService {
         return ResponseEntity.ok(session.getCommonLikes().stream()
                 .map(Integer::parseInt)
                 .toList());
+    }
+
+    /**
+     * Checks if a room exists based on the provided seed.
+     *
+     * @param seed the unique identifier used to determine if a room exists
+     * @return a ResponseEntity containing a Boolean value; true if the room exists, false otherwise
+     */
+    public ResponseEntity<Boolean> doesRoomExist(String seed) {
+        if (firstSeedExists(seed)) {
+            return ResponseEntity.ok(true);
+        }
+        return ResponseEntity.ok(false);
     }
 
     private Optional<Map.Entry<Session, Player>> validateAndFetch(String playerSessionId) {

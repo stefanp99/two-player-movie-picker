@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -25,6 +27,8 @@ import { SessionService } from '../session.service';
     MatIconModule,
     MatButtonModule,
     MatExpansionModule,
+    MatCardModule,
+    MatDividerModule,
 
     MovieCardComponent
   ],
@@ -34,8 +38,9 @@ import { SessionService } from '../session.service';
 export class MainPageComponent implements OnInit {
   seed: string = '';
   index: number = 0;
-  canPlayerRejoin: Boolean = false;
+  canPlayerRejoin: boolean = false;
   initialMovies: Movie[] = [];
+  roomExists: boolean | undefined;
 
   seedForm: FormGroup;
 
@@ -117,7 +122,7 @@ export class MainPageComponent implements OnInit {
   playerRejoinCheck() {
     const url = `${environment.apiBaseUrl}/api/v1/session/can-player-rejoin?playerSessionId=${this.sessionService.getSessionId()}`;
 
-    this.http.get<Boolean>(url).subscribe({
+    this.http.get<boolean>(url).subscribe({
       next: response => {
         // Rejoin is only allowed if session has previous index and seed
         this.canPlayerRejoin = response && this.index !== 0 && this.seed !== '';
@@ -135,12 +140,28 @@ export class MainPageComponent implements OnInit {
     this.seed = this.sessionService.getSeed();
   }
 
-  formatInput() {
+  formatInputAndCheckRoomExists() {
     // Enforce uppercase alphanumeric input without special characters
     const control = this.seedForm.get('seed');
     if (control) {
       const formatted = (control.value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
       control.setValue(formatted, { emitEvent: false });
+      if (formatted.length == 4) {
+        const url = `${environment.apiBaseUrl}/api/v1/session/room-exists?seed=${formatted}`;
+
+        this.http.get<boolean>(url).subscribe({
+          next: response => {
+            this.roomExists = response;
+          },
+          error: error => {
+            this.roomExists = false;
+            console.error('API Error:', error);
+          }
+        });
+      }
+      else {
+        this.roomExists = undefined;
+      }
     }
   }
 
