@@ -6,27 +6,37 @@
         <span class="room-seed">Room: {{ seed }}</span>
     </div>
 
-    <mat-card class="preview-movie-card" cdkDrag (cdkDragMoved)="onCardDragMove($event)"
-        (cdkDragEnded)="onCardDragEnded($event)"
-        [ngStyle]="{'background-image': 'url(' + movies.at(index)?.backdropUrl + ')'}" (click)='onClickShowCard()'
-        tabindex="0" aria-label="Show movie details">
-        <div class="preview-overlay">
-            <div class="preview-header">
-                <h2>{{ movies.at(index)?.title }}</h2>
-                <small>{{ movies.at(index)?.releaseDate | date: 'yyyy' }}</small>
-                <p class="tagline">{{ movies.at(index)?.tagline }}</p>
-            </div>
+    <div class="preview-card-wrapper" [ngStyle]="{'background-image': 'url(' + movies.at(index+1)?.backdropUrl + ')'}">
+        <mat-card class="preview-movie-card" cdkDrag (cdkDragMoved)="onCardDragMove($event)"
+            (cdkDragEnded)="onCardDragEnded($event)"
+            [ngStyle]="{'background-image': 'url(' + movies.at(index)?.backdropUrl + ')'}" (click)='onClickShowCard()'
+            tabindex="0" aria-label="Show movie details">
+            <div class="preview-overlay">
+                <mat-card-header class="preview-header">
+                    <mat-card-title-group>
+                        <mat-card-title>{{ movies.at(index)?.title }}</mat-card-title>
+                        <mat-card-subtitle>{{ movies.at(index)?.releaseDate | date: 'yyyy' }}</mat-card-subtitle>
+                        <mat-card-subtitle class="tagline">{{ movies.at(index)?.tagline }}</mat-card-subtitle>
+                    </mat-card-title-group>
+                </mat-card-header>
 
-            <div class="preview-meta">
-                <span>⭐ {{ movies.at(index)?.voteAverage | number: '1.0-2'}}</span>
-                <span>🎟️ {{ movies.at(index)?.voteCount | number: '':'en-US' }} votes</span>
-            </div>
+                <mat-card-content class="preview-meta">
+                    <span>⭐ {{ movies.at(index)?.voteAverage | number: '1.0-2'}}</span>
+                    <span>🎟️ {{ movies.at(index)?.voteCount | number: '':'en-US' }} votes</span>
+                    <span *ngIf="movies.at(index)?.runtime &&  movies.at(index)?.runtime !==0">⌚
+                        {{movies.at(index)?.runtime}}
+                        min</span>
+                    <span>🗣️ {{movies.at(index)?.spokenLanguages?.join(', ')}}</span>
+                </mat-card-content>
 
-            <mat-chip-set aria-label="Movie genres" class="genre-chips">
-                <mat-chip *ngFor="let genre of movies.at(index)?.genres">{{ genre.name }}</mat-chip>
-            </mat-chip-set>
-        </div>
-    </mat-card>
+                <mat-card-footer>
+                    <mat-chip-set aria-label="Movie genres" class="genre-chips">
+                        <mat-chip *ngFor="let genre of movies.at(index)?.genres">{{ genre.name }}</mat-chip>
+                    </mat-chip-set>
+                </mat-card-footer>
+            </div>
+        </mat-card>
+    </div>
     <mat-card-actions class="preview-actions">
         <button mat-mini-fab color="warn" (click)="skipNext(); $event.stopPropagation()" aria-label="Skip">
             <mat-icon>skip_next</mat-icon>
@@ -37,8 +47,8 @@
     </mat-card-actions>
 </div>
 
-<div *ngIf="displayBigMovieCard">
-    <mat-card class="movie-card" [ngStyle]="{'background-image': 'url(' + movies.at(index)?.backdropUrl + ')'}">
+<div *ngIf="displayBigMovieCard" class="movie-card">
+    <mat-card [ngStyle]="{'background-image': 'url(' + movies.at(index)?.backdropUrl + ')'}">
         <div class="top-bar text-overlay">
             <button mat-icon-button color="primary" (click)="displayBigMovieCard = false" aria-label="Close details">
                 <mat-icon>close</mat-icon>
@@ -60,11 +70,12 @@
             <div class="details-grid">
                 <p>⭐ {{ movies.at(index)?.voteAverage | number: '1.0-2' }}</p>
                 <p>🎟️ {{ movies.at(index)?.voteCount | number: '':'en-US'}} votes</p>
-                <p><strong>Popularity:</strong> {{movies.at(index)?.popularity}}</p>
-                <p><strong>Release Date:</strong> {{movies.at(index)?.releaseDate | date}}</p>
-                <p><strong>Runtime:</strong> {{movies.at(index)?.runtime}} min</p>
-                <p><strong>Languages:</strong> {{movies.at(index)?.spokenLanguages?.join(', ')}}</p>
-                <p><strong>Status:</strong> {{movies.at(index)?.status}}</p>
+                <p *ngIf="movies.at(index)?.status && movies.at(index)?.status === 'Released'">📅
+                    {{movies.at(index)?.releaseDate | date}}</p>
+                <p *ngIf="movies.at(index)?.status && movies.at(index)?.status !== 'Released'">📅 Not Released</p>
+                <p *ngIf="movies.at(index)?.runtime &&  movies.at(index)?.runtime !==0">⌚ {{movies.at(index)?.runtime}}
+                    min</p>
+                <p>🗣️ {{movies.at(index)?.spokenLanguages?.join(', ')}}</p>
             </div>
             <div class="button-row">
                 <a *ngIf="movies.at(index)?.imdbUrl" mat-raised-button color="accent" [href]="movies.at(index)?.imdbUrl"
@@ -89,10 +100,10 @@
         </mat-card-footer>
 
         <mat-card-actions class="action-buttons">
-            <button mat-fab color="warn" aria-label="Skip" (click)="skipNext()">
+            <button mat-fab aria-label="Skip" (click)="skipNext()">
                 <mat-icon>skip_next</mat-icon>
             </button>
-            <button mat-fab color="accent" aria-label="Like" (click)="favorite()">
+            <button mat-fab aria-label="Like" (click)="favorite()">
                 <mat-icon>favorite</mat-icon>
             </button>
         </mat-card-actions>

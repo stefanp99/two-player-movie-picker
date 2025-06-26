@@ -50,6 +50,8 @@ export class MovieCardComponent {
   skipsInterval: any = null;
   currentConfettiOrigin: { x: number, y: number } | null = null;
 
+  SWIPE_THRESHOLD = 150;
+
   constructor(private http: HttpClient, private dialog: MatDialog, private sessionService: SessionService) {
     this.index = this.sessionService.getIndex(); // Restore index from session if available
   }
@@ -186,7 +188,7 @@ export class MovieCardComponent {
     };
 
     // Start hearts animation if swiping right and not already running
-    if (x > 150 && !this.heartsInterval) {
+    if (x > this.SWIPE_THRESHOLD && !this.heartsInterval) {
       this.heartsInterval = setInterval(() => {
         var scalar = 10;
         var heart = confetti.shapeFromText({ text: '❤️', scalar });
@@ -202,7 +204,7 @@ export class MovieCardComponent {
     }
 
     // Start skips animation if swiping left and not already running
-    if (x < -150 && !this.skipsInterval) {
+    if (x < -this.SWIPE_THRESHOLD && !this.skipsInterval) {
       this.skipsInterval = setInterval(() => {
         var scalar = 10;
         var cross = confetti.shapeFromText({ text: '❌', scalar });
@@ -218,14 +220,14 @@ export class MovieCardComponent {
     }
 
     // Stop hearts animation if user drags back to center or left
-    if (x <= 150 && this.heartsInterval) {
+    if (x <= this.SWIPE_THRESHOLD && this.heartsInterval) {
       clearInterval(this.heartsInterval);
       this.heartsInterval = null;
       confetti.reset();
     }
 
     // Stop skips animation if user drags back to center or right
-    if (x >= -150 && this.skipsInterval) {
+    if (x >= -this.SWIPE_THRESHOLD && this.skipsInterval) {
       clearInterval(this.skipsInterval);
       this.skipsInterval = null;
       confetti.reset();
@@ -234,10 +236,10 @@ export class MovieCardComponent {
 
   onCardDragEnded(event: CdkDragEnd) {
     const x = event.distance.x;
-    if (x > 150) {
+    if (x > this.SWIPE_THRESHOLD) {
       // Swiped right (like)
       this.favorite();
-    } else if (x < -150) {
+    } else if (x < -this.SWIPE_THRESHOLD) {
       // Swiped left (skip)
       this.skipNext();
     }

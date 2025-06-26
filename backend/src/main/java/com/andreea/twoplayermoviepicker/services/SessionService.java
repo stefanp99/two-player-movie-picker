@@ -162,16 +162,16 @@ public class SessionService {
         if (player.getSeedIndex() + 1 <= session.getSeedSequence().size()) {
             String newSeed = session.getSeedSequence().get(player.getSeedIndex());
             sessionRepository.save(session);
-            log.info("Player seed index is lower or equal than the number of seeds in the sequence, " +
-                    "using seed {} for next request", newSeed);
+            log.info("Player with session ID {} seed index is lower or equal than the number of seeds in the sequence, " +
+                    "using seed {} for next request", player.getPlayerSessionId(), newSeed);
             return tmdbService.getRandomMoviesFromDiscover(request.language(), newSeed);
         }
 
         String newSeed = tmdbService.generateSeed(lastSeedInSequence);
         session.addToSeedSequence(newSeed);
         session.setUpdatedAt(LocalDateTime.now());
-        log.info("Player seed index is higher than the number of seeds in the sequence, " +
-                "adding new seed {} to sequence", newSeed);
+        log.info("Player with session ID {} seed index is higher than the number of seeds in the sequence, " +
+                "adding new seed {} to sequence", player.getPlayerSessionId(), newSeed);
         sessionRepository.save(session);
 
         return tmdbService.getRandomMoviesFromDiscover(request.language(), newSeed);
