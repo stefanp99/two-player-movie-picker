@@ -1,6 +1,6 @@
 <div class="center-div">
     <!-- Show only movie card when initialMovies are loaded -->
-    <ng-container *ngIf="initialMovies.length; else showRoomPanels">
+    <ng-container *ngIf="initialMovies.length > 0; else showRoomPanels">
         <app-movie-card [movies]="initialMovies" [seed]="seed" (return)="onReturn()"></app-movie-card>
     </ng-container>
 

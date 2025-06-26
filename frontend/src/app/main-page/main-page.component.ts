@@ -11,15 +11,14 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { environment } from '../../environments/environment';
+import { LocalStorageService } from '../local-storage.service';
 import { Movie } from '../models/movie.model';
 import { MovieCardComponent } from '../movie-card/movie-card.component';
-import { SessionService } from '../session.service';
 
 @Component({
   selector: 'app-main-page',
   imports: [
     CommonModule,
-
     FormsModule,
     ReactiveFormsModule,
 
@@ -32,7 +31,7 @@ import { SessionService } from '../session.service';
     MatDividerModule,
     MatProgressSpinnerModule,
 
-    MovieCardComponent
+    MovieCardComponent,
   ],
   templateUrl: './main-page.component.html',
   styleUrl: './main-page.component.css'
@@ -47,16 +46,16 @@ export class MainPageComponent implements OnInit {
 
   seedForm: FormGroup;
 
-  constructor(private fb: FormBuilder, private http: HttpClient, private sessionService: SessionService) {
+  constructor(private fb: FormBuilder, private http: HttpClient, private localStorageService: LocalStorageService) {
     this.seedForm = this.fb.group({
       seed: ['', [Validators.required, Validators.pattern(/^[A-Z0-9]{4}$/)]] // 4-character alphanumeric seed
     });
   }
 
   ngOnInit(): void {
-    this.index = this.sessionService.getIndex(); // Restore session index
-    this.seed = this.sessionService.getSeed();   // Restore session seed
-    this.playerRejoinCheck();                    // Determine if rejoin is allowed
+    this.index = this.localStorageService.getIndex(); // Restore session index
+    this.seed = this.localStorageService.getSeed(); // Restore session seed
+    this.playerRejoinCheck(); // Determine if rejoin is allowed
   }
 
   generateSeed() {
@@ -80,22 +79,22 @@ export class MainPageComponent implements OnInit {
   }
 
   createRoom() {
-    this.sessionService.clearAll(); // Reset previous session data
-    this.sessionService.setSessionId(); // Generate new session ID
+    this.localStorageService.clearAll(); // Reset previous session data
+    this.localStorageService.setSessionId(); // Generate new session ID
     this.isFetchingMovies = true;
 
     const url = `${environment.apiBaseUrl}/api/v1/session/create-room`;
 
     this.http.post<Movie[]>(url, {
       "seed": this.seed,
-      "playerSessionId": this.sessionService.getSessionId(),
+      "playerSessionId": this.localStorageService.getSessionId(),
       "language": "en-US" // TODO: make this configurable
     }).subscribe({
       next: response => {
         this.initialMovies = response;
-        this.sessionService.setMovies(this.initialMovies);
-        this.sessionService.setSeed(this.seed);
-        this.sessionService.setIndex(0); // Start from beginning
+        this.localStorageService.setMovies(this.initialMovies);
+        this.localStorageService.setSeed(this.seed);
+        this.localStorageService.setIndex(0); // Start from beginning
         this.isFetchingMovies = false;
       },
       error: error => {
@@ -110,14 +109,14 @@ export class MainPageComponent implements OnInit {
 
     this.http.post<Movie[]>(url, {
       "seed": this.seed,
-      "playerSessionId": this.sessionService.getSessionId(),
+      "playerSessionId": this.localStorageService.getSessionId(),
       "language": "en-US" // TODO: make this configurable
     }).subscribe({
       next: response => {
         this.initialMovies = response;
-        this.sessionService.setMovies(this.initialMovies);
-        this.sessionService.setSeed(this.seed);
-        this.sessionService.setIndex(0); // Reset index when joining
+        this.localStorageService.setMovies(this.initialMovies);
+        this.localStorageService.setSeed(this.seed);
+        this.localStorageService.setIndex(0); // Reset index when joining
         this.isFetchingMovies = false;
       },
       error: error => {
@@ -127,7 +126,7 @@ export class MainPageComponent implements OnInit {
   }
 
   playerRejoinCheck() {
-    const url = `${environment.apiBaseUrl}/api/v1/session/can-player-rejoin?playerSessionId=${this.sessionService.getSessionId()}`;
+    const url = `${environment.apiBaseUrl}/api/v1/session/can-player-rejoin?playerSessionId=${this.localStorageService.getSessionId()}`;
 
     this.http.get<boolean>(url).subscribe({
       next: response => {
@@ -143,8 +142,8 @@ export class MainPageComponent implements OnInit {
 
   rejoinRoom() {
     // Restore session from local storage/service
-    this.initialMovies = this.sessionService.getMovies();
-    this.seed = this.sessionService.getSeed();
+    this.initialMovies = this.localStorageService.getMovies();
+    this.seed = this.localStorageService.getSeed();
   }
 
   formatInputAndCheckRoomExists() {

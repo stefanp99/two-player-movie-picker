@@ -5,7 +5,7 @@ import { Movie } from './models/movie.model';
 @Injectable({
     providedIn: 'root'
 })
-export class SessionService {
+export class LocalStorageService {
     constructor() {
         this.setSessionId();
     }
@@ -43,12 +43,12 @@ export class SessionService {
         return localStorage.getItem('seed') || '';
     }
 
-    setLiked(movieIds: number[]) {
-        localStorage.setItem('liked', JSON.stringify(movieIds));
+    setLikedIndexes(movieIds: number[]) {
+        localStorage.setItem('likedIndexes', JSON.stringify(movieIds));
     }
 
-    getLiked(): number[] {
-        return JSON.parse(localStorage.getItem('liked') || '[]');
+    getLikedIndexes(): number[] {
+        return JSON.parse(localStorage.getItem('likedIndexes') || '[]');
     }
 
     clearAll() {

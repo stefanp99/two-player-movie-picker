@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
@@ -11,10 +11,11 @@ import confetti from 'canvas-confetti';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Movie } from '../models/movie.model';
-import { SessionService } from '../session.service';
+import { LocalStorageService } from '../local-storage.service';
 import { NoTrailerDialogComponent } from './no-trailer-dialog.component';
 import { TrailerDialogComponent } from './trailer-dialog.component';
 import { CdkDragEnd, CdkDragEnter, CdkDragMove, CdkDragStart, DragDropModule } from '@angular/cdk/drag-drop';
+import { LikedMoviesComponent } from "../liked-movies/liked-movies.component";
 
 
 @Component({
@@ -30,11 +31,13 @@ import { CdkDragEnd, CdkDragEnter, CdkDragMove, CdkDragStart, DragDropModule } f
     MatDialogModule,
 
     DragDropModule,
+
+    LikedMoviesComponent
   ],
   templateUrl: './movie-card.component.html',
   styleUrl: './movie-card.component.css'
 })
-export class MovieCardComponent {
+export class MovieCardComponent implements OnInit {
   @Input() movies: Movie[] = [];
   @Input() seed: string = '';
 
@@ -42,23 +45,28 @@ export class MovieCardComponent {
 
   index: number = 0;
   showMatchAnimation = false;
-  likedMovieIds: number[] = [];
+  likedMovieIndexes: number[] = [];
   commonMovies: Movie[] = [];
   displayBigMovieCard: boolean = false;
   dragging = false;
   heartsInterval: any = null;
   skipsInterval: any = null;
   currentConfettiOrigin: { x: number, y: number } | null = null;
+  isShowLikedMovies: boolean = false;
 
   SWIPE_THRESHOLD = 150;
 
-  constructor(private http: HttpClient, private dialog: MatDialog, private sessionService: SessionService) {
-    this.index = this.sessionService.getIndex(); // Restore index from session if available
+  constructor(private http: HttpClient, private dialog: MatDialog, private localStorageService: LocalStorageService) {
+  }
+
+  ngOnInit(): void {
+    this.index = this.localStorageService.getIndex(); // Restore index from local storage if available
+    this.likedMovieIndexes = this.localStorageService.getLikedIndexes(); // Restore liked movie indexes from local storage if available
   }
 
   skipNext() {
     this.index++;
-    this.sessionService.setIndex(this.index);
+    this.localStorageService.setIndex(this.index);
     this.displayBigMovieCard = false;
 
     this.getCommonLikes();
@@ -75,12 +83,12 @@ export class MovieCardComponent {
 
     this.http.post<Boolean>(url, {
       "seed": this.seed,
-      "playerSessionId": this.sessionService.getSessionId(),
+      "playerSessionId": this.localStorageService.getSessionId(),
       "movieId": movieId
     }).subscribe({
       next: response => {
-        this.likedMovieIds.push(movieId);
-        this.sessionService.setLiked(this.likedMovieIds);
+        this.likedMovieIndexes.push(this.index);
+        this.localStorageService.setLikedIndexes(this.likedMovieIndexes);
 
         // Trigger confetti animation if mutual match (backend returns true)
         if (response === true) {
@@ -103,12 +111,12 @@ export class MovieCardComponent {
 
     this.http.post<Movie[]>(url, {
       "seed": this.seed,
-      "playerSessionId": this.sessionService.getSessionId(),
+      "playerSessionId": this.localStorageService.getSessionId(),
       "language": "en-US" // TODO: make this configurable
     }).subscribe({
       next: response => {
         this.movies.push(...response); // Append new movies to existing list
-        this.sessionService.setMovies(this.movies);
+        this.localStorageService.setMovies(this.movies);
       },
       error: error => {
         console.error('API Error:', error);
@@ -143,7 +151,7 @@ export class MovieCardComponent {
   }
 
   getCommonLikes(): void {
-    const url = `${environment.apiBaseUrl}/api/v1/session/common-likes?playerSessionId=${this.sessionService.getSessionId()}`;
+    const url = `${environment.apiBaseUrl}/api/v1/session/common-likes?playerSessionId=${this.localStorageService.getSessionId()}`;
 
     this.http.get<number[]>(url).subscribe({
       next: response => {
@@ -286,6 +294,14 @@ export class MovieCardComponent {
         startVelocity: 50,
       });
     }, 250);
+  }
+
+  showLikedMovies() {
+    this.isShowLikedMovies = true;
+  }
+
+  onReturn() {
+    this.isShowLikedMovies = false;
   }
 }
 

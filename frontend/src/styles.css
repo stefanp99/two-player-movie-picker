@@ -1,4 +1,29 @@
 /* You can add global styles to this file, and also import other style files */
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+/* Layout Containers */
+.top-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+    background: transparent;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+}
+
+.room-seed {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #e0e0e0;
+    letter-spacing: 0.5px;
+}
