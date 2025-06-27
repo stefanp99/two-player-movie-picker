@@ -40,5 +40,5 @@ Feature                         | Status   | Notes                              
 | Swipe logging per player        | Done  | Persist liked/skipped state                  |
 | Matching logic                  | Done  | Detect when 2+ users like the same movie     |
 | Redis caching for TMDB results  | Next  | Required for deployment to prevent API abuse |
-| Frontend match UI               | Next  | Show when both users like the same movie     |
+| Frontend match UI               | Done  | Show when both users like the same movie     |
 | Multi-user support (>2 players) | Later | Expand room to handle N players              |
