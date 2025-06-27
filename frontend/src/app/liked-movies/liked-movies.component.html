@@ -6,22 +6,49 @@
         <span class="room-seed">Room: {{ seed }}</span>
     </div>
 
-    <!--Common liked movies as grid-->
-    <div class="preview-card-grid">
-        <mat-card class="preview-movie-card" [ngStyle]="{'background-image': 'url(' + movie.backdropUrl + ')'}"
-            *ngFor="let movie of playerLikedMovies" (click)='onClickShowCard(movie.id, true)' tabindex="0"
-            aria-label="Show movie details">
-            <div class="preview-overlay">
-                <mat-card-content class="preview-content">
-                    {{ movie.title }}
-                </mat-card-content>
+    <mat-accordion>
+        <mat-expansion-panel *ngIf="playerLikedMovies.length>0">
+            <mat-expansion-panel-header>
+                <mat-panel-title>Your ❤️ Movies</mat-panel-title>
+                <mat-panel-description>{{playerLikedMovies.length}} Movies</mat-panel-description>
+            </mat-expansion-panel-header>
+            <!--Player liked movies as grid-->
+            <div class="preview-card-grid">
+                <mat-card class="preview-movie-card" [ngStyle]="{'background-image': 'url(' + movie.backdropUrl + ')'}"
+                    *ngFor="let movie of playerLikedMovies" (click)='onClickShowCard(movie.id, true)' tabindex="0"
+                    aria-label="Show movie details">
+                    <div class="preview-overlay">
+                        <mat-card-content class="preview-content">
+                            {{ movie.title }}
+                        </mat-card-content>
+                    </div>
+                </mat-card>
             </div>
-        </mat-card>
-    </div>
+        </mat-expansion-panel>
+
+        <mat-expansion-panel *ngIf="commonLikedMovies.length>0">
+            <mat-expansion-panel-header>
+                <mat-panel-title>Common ❤️ Movies</mat-panel-title>
+                <mat-panel-description>{{commonLikedMovies.length}} Movies</mat-panel-description>
+            </mat-expansion-panel-header>
+            <!--Common liked movies as grid-->
+            <div class="preview-card-grid">
+                <mat-card class="preview-movie-card" [ngStyle]="{'background-image': 'url(' + movie.backdropUrl + ')'}"
+                    *ngFor="let movie of commonLikedMovies" (click)='onClickShowCard(movie.id, false)' tabindex="0"
+                    aria-label="Show movie details">
+                    <div class="preview-overlay">
+                        <mat-card-content class="preview-content">
+                            {{ movie.title }}
+                        </mat-card-content>
+                    </div>
+                </mat-card>
+            </div>
+        </mat-expansion-panel>
+    </mat-accordion>
 </div>
 
-<div class="movie-card-wrapper">
-    <div *ngIf="displayBigMovieCard" class="movie-card">
+<div class="movie-card-wrapper" *ngIf="displayBigMovieCard">
+    <div class="movie-card">
         <mat-card [ngStyle]="{'background-image': 'url(' + movieToShow?.backdropUrl + ')'}">
             <div class="top-bar text-overlay">
                 <button mat-icon-button color="primary" (click)="displayBigMovieCard = false"

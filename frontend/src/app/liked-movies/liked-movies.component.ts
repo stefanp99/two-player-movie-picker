@@ -12,6 +12,7 @@ import { TrailerDialogComponent } from '../movie-card/trailer-dialog.component';
 import { HttpClient } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
 import { NoTrailerDialogComponent } from '../movie-card/no-trailer-dialog.component';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 @Component({
   selector: 'app-liked-movies',
@@ -22,6 +23,7 @@ import { NoTrailerDialogComponent } from '../movie-card/no-trailer-dialog.compon
     MatButtonModule,
     MatCardModule,
     MatChipsModule,
+    MatExpansionModule,
   ],
   templateUrl: './liked-movies.component.html',
   styleUrl: './liked-movies.component.css'

@@ -5,6 +5,12 @@
     padding: 12px;
 }
 
+@media (min-width: 700px) {
+    .preview-card-grid {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 0.25fr));
+    }
+}
+
 .preview-movie-card {
     aspect-ratio: 1 / 1;
     background-size: cover;
@@ -33,6 +39,7 @@
 /* Movie Card */
 .movie-card-wrapper {
     min-height: 100vh;
+    height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -41,7 +48,7 @@
 .movie-card {
     width: 100vw;
     max-width: 1500px;
-    min-height: 100vh;
+    height: 100%;
     background-color: rgba(183, 0, 255, 0.08);
     background-size: cover;
     background-position: center;
@@ -60,6 +67,8 @@ mat-card-title {
 }
 
 .overview {
+    max-height: 10vh;
+    overflow-y: auto;
     margin-top: 0.5rem;
     font-size: 1.08rem;
     line-height: 1.7;
