@@ -1,6 +1,7 @@
 package com.andreea.twoplayermoviepicker.controllers;
 
 import com.andreea.twoplayermoviepicker.services.TmdbService;
+import info.movito.themoviedbapi.tools.TmdbException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -26,7 +27,7 @@ public class TmdbController {
      *         or an appropriate error response if the trailer cannot be found
      */
     @GetMapping("youtube-trailer/{movieId}/{language}")
-    public ResponseEntity<String> getYoutubeTrailer(@PathVariable Integer movieId, @PathVariable String language) {
+    public ResponseEntity<String> getYoutubeTrailer(@PathVariable Integer movieId, @PathVariable String language) throws TmdbException {
         return tmdbService.getYoutubeTrailer(movieId, language);
     }
 }

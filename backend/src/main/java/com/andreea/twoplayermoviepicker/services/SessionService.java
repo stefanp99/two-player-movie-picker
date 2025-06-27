@@ -1,5 +1,12 @@
 package com.andreea.twoplayermoviepicker.services;
 
+import com.andreea.twoplayermoviepicker.exceptions.InvalidSeedException;
+import com.andreea.twoplayermoviepicker.exceptions.PlayerNotFoundException;
+import com.andreea.twoplayermoviepicker.exceptions.PlayerSessionExistsException;
+import com.andreea.twoplayermoviepicker.exceptions.SeedExistsException;
+import com.andreea.twoplayermoviepicker.exceptions.SeedNotFoundException;
+import com.andreea.twoplayermoviepicker.exceptions.SessionNotFoundException;
+import com.andreea.twoplayermoviepicker.exceptions.TooManyPlayersException;
 import com.andreea.twoplayermoviepicker.models.Player;
 import com.andreea.twoplayermoviepicker.models.Session;
 import com.andreea.twoplayermoviepicker.repositories.PlayerRepository;
@@ -13,9 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.AbstractMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static com.andreea.twoplayermoviepicker.utils.UtilityMethods.isSeedValid;
@@ -43,16 +48,13 @@ public class SessionService {
      */
     public ResponseEntity<List<MovieResponse>> createRoom(RoomRequest request) {
         if (!isSeedValid(request.seed())) {
-            log.warn("Invalid seed provided: {}", request.seed());
-            return ResponseEntity.badRequest().build();
+            throw new InvalidSeedException(request.seed(), request.playerSessionId());
         }
         if (playerSessionExists(request.playerSessionId())) {
-            log.warn("Player session id {} already exists", request.playerSessionId());
-            return ResponseEntity.badRequest().build();
+            throw new PlayerSessionExistsException(request.playerSessionId());
         }
         if (firstSeedExists(request.seed())) {
-            log.warn("Seed {} already exists", request.seed());
-            return ResponseEntity.badRequest().build();
+            throw new SeedExistsException(request.seed(), request.playerSessionId());
         }
 
         Player player = Player.builder()
@@ -73,7 +75,7 @@ public class SessionService {
 
         sessionRepository.save(session);
 
-        return tmdbService.getRandomMoviesFromDiscover(request.language(), request.seed());
+        return ResponseEntity.ok(tmdbService.getRandomMoviesFromDiscover(request.language(), request.seed()));
     }
 
     /**
@@ -88,22 +90,18 @@ public class SessionService {
      */
     public ResponseEntity<List<MovieResponse>> joinRoom(RoomRequest request) {
         if (!isSeedValid(request.seed())) {
-            log.warn("Invalid seed provided: {}", request.seed());
-            return ResponseEntity.badRequest().build();
+            throw new InvalidSeedException(request.seed(), request.playerSessionId());
         }
         if (!firstSeedExists(request.seed())) {
-            log.warn("Seed {} does not exist", request.seed());
-            return ResponseEntity.notFound().build();
+            throw new SeedNotFoundException(request.seed(), request.playerSessionId());
         }
 
         Session session = findSessionBySeed(request.seed());
         if (session == null) {
-            log.warn("Session with seed {} not found", request.seed());
-            return ResponseEntity.notFound().build();
+            throw new SessionNotFoundException(request.seed(), request.playerSessionId());
         }
         if (session.getPlayers().size() >= 2) {//TODO: in the future expand for > 2 players
-            log.warn("Session with seed {} already has 2 players", request.seed());
-            return ResponseEntity.badRequest().build();
+            throw new TooManyPlayersException(request.seed(), request.playerSessionId(), session.getPlayers().size());
         }
 
         if (playerSessionExists(request.playerSessionId())) {
@@ -114,7 +112,7 @@ public class SessionService {
             player.setUpdatedAt(LocalDateTime.now());
             sessionRepository.save(session);
             log.info("Player session id {} moved to the room with ID {}", request.playerSessionId(), session.getId());
-            return tmdbService.getRandomMoviesFromDiscover(request.language(), request.seed());
+            return ResponseEntity.ok(tmdbService.getRandomMoviesFromDiscover(request.language(), request.seed()));
         }
 
         Player player = Player.builder()
@@ -127,7 +125,7 @@ public class SessionService {
 
         log.info("Added new player with session id {} to session with id {}", request.playerSessionId(), session.getId());
 
-        return tmdbService.getRandomMoviesFromDiscover(request.language(), request.seed());
+        return ResponseEntity.ok(tmdbService.getRandomMoviesFromDiscover(request.language(), request.seed()));
     }
 
     /**
@@ -141,30 +139,23 @@ public class SessionService {
      * appropriate error response if validation fails or an error occurs
      */
     public ResponseEntity<List<MovieResponse>> fetchMoreMovies(RoomRequest request) {
-        Optional<Map.Entry<Session, Player>> result = validateAndFetch(request);
-        if (result.isEmpty()) {
-            log.warn("Session or player not found for room request {}", request);
-            return ResponseEntity.notFound().build();
-        }
-
-        Session session = result.get().getKey();
-        Player player = result.get().getValue();
+        Session session = getValidSession(request.seed(), request.playerSessionId());
+        Player player = getValidPlayerInSession(request.seed(), request.playerSessionId());
 
         String lastSeedInSequence = getLastSeedInSequence(session.getId());
         if (lastSeedInSequence == null) {
-            log.error("Last seed in sequence is null for session id {}", session.getId());
-            return ResponseEntity.internalServerError().build();
+            throw new RuntimeException("Last seed not found for session " + session.getId());
         }
 
         player.setSeedIndex(player.getSeedIndex() + 1);
         player.setUpdatedAt(LocalDateTime.now());
 
-        if (player.getSeedIndex() + 1 <= session.getSeedSequence().size()) {
+        if (player.getSeedIndex() < session.getSeedSequence().size()) {
             String newSeed = session.getSeedSequence().get(player.getSeedIndex());
             sessionRepository.save(session);
             log.info("Player with session ID {} seed index is lower or equal than the number of seeds in the sequence, " +
                     "using seed {} for next request", player.getPlayerSessionId(), newSeed);
-            return tmdbService.getRandomMoviesFromDiscover(request.language(), newSeed);
+            return ResponseEntity.ok(tmdbService.getRandomMoviesFromDiscover(request.language(), newSeed));
         }
 
         String newSeed = tmdbService.generateSeed(lastSeedInSequence);
@@ -174,7 +165,7 @@ public class SessionService {
                 "adding new seed {} to sequence", player.getPlayerSessionId(), newSeed);
         sessionRepository.save(session);
 
-        return tmdbService.getRandomMoviesFromDiscover(request.language(), newSeed);
+        return ResponseEntity.ok(tmdbService.getRandomMoviesFromDiscover(request.language(), newSeed));
     }
 
     /**
@@ -191,20 +182,12 @@ public class SessionService {
      * - or a response with appropriate HTTP status codes if validation or processing fails
      */
     public ResponseEntity<Boolean> addToLikesAndReturnIsCommon(LikeRequest request) {
-        Optional<Map.Entry<Session, Player>> result = validateAndFetch(request);
-        if (result.isEmpty()) {
-            log.warn("Session or player not found for like request {}", request);
-            return ResponseEntity.notFound().build();
-        }
-
-        Session session = result.get().getKey();
-        Player player = result.get().getValue();
-
+        Session session = getValidSession(request.seed(), request.playerSessionId());
+        Player player = getValidPlayerInSession(request.seed(), request.playerSessionId());
         String movieId = String.valueOf(request.movieId());
 
         if (player.getLikes().contains(movieId)) {
-            log.warn("Movie {} already liked by player {}", movieId, player.getPlayerSessionId());
-            return ResponseEntity.badRequest().build();
+            throw new IllegalArgumentException("Movie already liked");
         }
 
         player.addToLikes(movieId);
@@ -213,7 +196,7 @@ public class SessionService {
 
         Player otherPlayer = findOtherPlayerInSession(player, session);
         if (otherPlayer == null) {
-            log.warn("No other player found in session {}. Current player session ID {}",
+            log.info("No other player found in session {}. Current player session ID {}",
                     session.getId(), player.getPlayerSessionId());
             return ResponseEntity.ok(false);
         }
@@ -224,6 +207,7 @@ public class SessionService {
             sessionRepository.save(session);
             return ResponseEntity.ok(true);
         }
+        // No common likes found between player and otherPlayer
         session.setUpdatedAt(LocalDateTime.now());
         sessionRepository.save(session);
 
@@ -260,11 +244,7 @@ public class SessionService {
      * if the session is valid, or a 404 NOT FOUND response if the session is invalid or not found.
      */
     public ResponseEntity<List<Integer>> getCommonLikes(String playerSessionId) {
-        Optional<Map.Entry<Session, Player>> result = validateAndFetch(playerSessionId);
-        if (result.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        Session session = result.get().getKey();
+        Session session = getValidSessionByPlayerSessionId(playerSessionId);
         return ResponseEntity.ok(session.getCommonLikes().stream()
                 .map(Integer::parseInt)
                 .toList());
@@ -283,41 +263,33 @@ public class SessionService {
         return ResponseEntity.ok(false);
     }
 
-    private Optional<Map.Entry<Session, Player>> validateAndFetch(String playerSessionId) {
-        Optional<Player> optionalPlayer = playerRepository.findByPlayerSessionId(playerSessionId);
-        if (optionalPlayer.isEmpty()) {
-            log.warn("Player with session id {} not found", playerSessionId);
-            return Optional.empty();
+    private Session getValidSession(String seed, String playerSessionId) {
+        if (!isSeedValid(seed)) {
+            throw new InvalidSeedException(seed, playerSessionId);
         }
-        Player player = optionalPlayer.get();
-        if (player.getSession() == null) {
-            log.warn("Player with session id {} has no session", playerSessionId);
-            return Optional.empty();
-        }
+        return sessionRepository.findSessionIdByFirstSeed(seed)
+                .flatMap(sessionRepository::findById)
+                .orElseThrow(() -> new SessionNotFoundException(seed, playerSessionId));
+    }
+
+    private Session getValidSessionByPlayerSessionId(String playerSessionId) {
+        Player player = getValidPlayer(playerSessionId);
+        return player.getSession();
+    }
+
+    private Player getValidPlayer(String playerSessionId) {
+        return playerRepository.findByPlayerSessionId(playerSessionId)
+                .orElseThrow(() -> new PlayerNotFoundException(playerSessionId));
+    }
+
+    private Player getValidPlayerInSession(String seed, String playerSessionId) {
+        Player player = getValidPlayer(playerSessionId);
         Session session = player.getSession();
-        return validateCommon(session.getSeedSequence().getFirst(), playerSessionId);
-    }
-
-    private Optional<Map.Entry<Session, Player>> validateAndFetch(RoomRequest request) {
-        return validateCommon(request.seed(), request.playerSessionId());
-    }
-
-    private Optional<Map.Entry<Session, Player>> validateAndFetch(LikeRequest request) {
-        return validateCommon(request.seed(), request.playerSessionId());
-    }
-
-    private Optional<Map.Entry<Session, Player>> validateCommon(String seed, String playerSessionId) {
-        if (!isSeedValid(seed) || !playerSessionExists(playerSessionId) || !firstSeedExists(seed)) {
-            return Optional.empty();
+        if (session == null || session.getSeedSequence().isEmpty()
+                || !seed.equals(session.getSeedSequence().getFirst())) {
+            throw new SessionNotFoundException(seed, playerSessionId);
         }
-
-        Session session = findSessionBySeed(seed);
-        Player player = findPlayerBySessionId(playerSessionId);
-        if (session == null || player == null) {
-            return Optional.empty();
-        }
-
-        return Optional.of(new AbstractMap.SimpleEntry<>(session, player));
+        return player;
     }
 
     private Boolean playerSessionExists(String playerSessionId) {

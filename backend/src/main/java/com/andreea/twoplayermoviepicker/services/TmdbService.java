@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -27,7 +28,6 @@ import static com.andreea.twoplayermoviepicker.utils.ConfigVariables.MOVIES_FETC
 import static com.andreea.twoplayermoviepicker.utils.Constants.MAX_NUMBER_BASE_36;
 import static com.andreea.twoplayermoviepicker.utils.Constants.TMDB_DISCOVER_PAGE_SIZE;
 import static com.andreea.twoplayermoviepicker.utils.Constants.YOUTUBE_VIDEO_BASE_URL;
-import static com.andreea.twoplayermoviepicker.utils.UtilityMethods.isSeedValid;
 import static java.lang.String.format;
 
 @Slf4j
@@ -44,17 +44,12 @@ public class TmdbService {
      *
      * @param language the language in which the movie data should be retrieved
      * @param seed     a string seed used to generate randomization for selecting movies
-     * @return a ResponseEntity containing a list of movie responses or an error response in case of invalid seed,
-     * no movies found, or other issues
+     * @return a list of movie responses
      */
-    public ResponseEntity<List<MovieResponse>> getRandomMoviesFromDiscover(String language,
-                                                                           String seed) {
+    public List<MovieResponse> getRandomMoviesFromDiscover(String language,
+                                                           String seed) {
         List<MovieResponse> movieResponseList;
 
-        if (!isSeedValid(seed)) {
-            log.warn("Invalid seed received in getRandomMoviesFromDiscover: {}", seed);
-            return ResponseEntity.badRequest().build();
-        }
         long seedLong = Long.parseLong(seed.toUpperCase(), 36);
         Random random = new Random(seedLong);
         Integer discoverPage = random.nextInt(MAX_DISCOVER_PAGE) + 1;
@@ -64,9 +59,10 @@ public class TmdbService {
         if (movieResultsPage != null) {
             movieResponseList = getMovieResponseListFromMovieResultsPage(movieResultsPage, language, random);
             log.info("Successfully fetched {} movies from discover", movieResponseList.size());
-            return ResponseEntity.ok(movieResponseList);
+            return movieResponseList;
         }
-        return ResponseEntity.notFound().build();
+        log.warn("Failed to fetch movies from discover for seed {} (page {})", seed, discoverPage);
+        return Collections.emptyList();
     }
 
     /**
@@ -105,8 +101,7 @@ public class TmdbService {
      * @return a ResponseEntity containing the YouTube trailer URL as a string if found,
      * or a 404 Not Found response if no suitable video is available
      */
-    public ResponseEntity<String> getYoutubeTrailer(Integer movieId, String language) {
-        try {
+    public ResponseEntity<String> getYoutubeTrailer(Integer movieId, String language) throws TmdbException {
             VideoResults videoResults = tmdbApi.getMovies().getVideos(movieId, language);
             List<Video> videos = videoResults.getResults();
 
@@ -125,10 +120,6 @@ public class TmdbService {
             }
             log.warn("No suitable YouTube trailer found for movie {}", movieId);
             return ResponseEntity.notFound().build();
-        } catch (TmdbException e) {
-            log.error("Error fetching YouTube trailer for movie {}: {}", movieId, e.getMessage());
-            throw new RuntimeException(e);
-        }
     }
 
     private MovieDb getMovieById(Integer id, String language) {
