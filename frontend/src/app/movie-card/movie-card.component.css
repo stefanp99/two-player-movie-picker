@@ -105,10 +105,44 @@ mat-chip {
     gap: 1.5rem;
 }
 
+/* Match Overlay */
+.match-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(30, 0, 60, 0.95);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    animation: fadeInOut 3s ease-in-out;
+}
+
+.match-poster {
+    width: 50vw;
+    max-width: 400px;
+    border-radius: 18px;
+    box-shadow: 0 0 32px #fff;
+    transform: scale(0.8);
+    animation: popIn 0.75s ease forwards;
+}
+
+
 /* Movie Card */
+.movie-card-wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 .movie-card {
     width: 100vw;
-    max-width: 900px;
+    max-width: 1500px;
+    height: 100%;
     background-color: rgba(183, 0, 255, 0.08);
     background-size: cover;
     background-position: center;
@@ -116,14 +150,6 @@ mat-chip {
     flex-direction: column;
     border-radius: 20px;
     box-shadow: 0 4px 32px rgba(0, 0, 0, 0.7);
-}
-
-.poster-img {
-    width: 120px;
-    height: auto;
-    border-radius: 10px;
-    margin-left: 1.5rem;
-    box-shadow: 0 2px 12px #0008;
 }
 
 .text-overlay {
@@ -151,6 +177,20 @@ mat-chip {
     gap: 1.2rem;
 }
 
+.action-buttons {
+    display: flex;
+    justify-content: space-around;
+    gap: 2rem;
+}
+
+.poster-img {
+    width: 120px;
+    height: auto;
+    border-radius: 10px;
+    margin-left: 1.5rem;
+    box-shadow: 0 2px 12px #0008;
+}
+
 .redirect-buttons {
     width: 48px;
     height: 48px;
@@ -172,38 +212,6 @@ mat-chip {
 .redirect-buttons:focus {
     transform: scale(1.08);
 }
-
-.action-buttons {
-    display: flex;
-    justify-content: space-around;
-    gap: 2rem;
-}
-
-/* Match Overlay */
-.match-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(30, 0, 60, 0.95);
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    animation: fadeInOut 3s ease-in-out;
-}
-
-.match-poster {
-    width: 50vw;
-    max-width: 400px;
-    border-radius: 18px;
-    box-shadow: 0 0 32px #fff;
-    transform: scale(0.8);
-    animation: popIn 0.75s ease forwards;
-}
-
 
 @media (min-width: 768px) {
     .match-poster {

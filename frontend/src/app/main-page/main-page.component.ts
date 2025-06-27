@@ -117,6 +117,7 @@ export class MainPageComponent implements OnInit {
         this.localStorageService.setMovies(this.initialMovies);
         this.localStorageService.setSeed(this.seed);
         this.localStorageService.setIndex(0); // Reset index when joining
+        this.localStorageService.setLikedIndexes([]);
         this.isFetchingMovies = false;
       },
       error: error => {

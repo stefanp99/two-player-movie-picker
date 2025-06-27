@@ -1,3 +1,4 @@
+import { CdkDragEnd, CdkDragMove, DragDropModule } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
@@ -10,12 +11,11 @@ import { MatIconModule } from '@angular/material/icon';
 import confetti from 'canvas-confetti';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Movie } from '../models/movie.model';
+import { LikedMoviesComponent } from "../liked-movies/liked-movies.component";
 import { LocalStorageService } from '../local-storage.service';
+import { Movie } from '../models/movie.model';
 import { NoTrailerDialogComponent } from './no-trailer-dialog.component';
 import { TrailerDialogComponent } from './trailer-dialog.component';
-import { CdkDragEnd, CdkDragEnter, CdkDragMove, CdkDragStart, DragDropModule } from '@angular/cdk/drag-drop';
-import { LikedMoviesComponent } from "../liked-movies/liked-movies.component";
 
 
 @Component({
@@ -46,7 +46,8 @@ export class MovieCardComponent implements OnInit {
   index: number = 0;
   showMatchAnimation = false;
   likedMovieIndexes: number[] = [];
-  commonMovies: Movie[] = [];
+  playerLikedMovies: Movie[] = [];
+  commonLikedMovies: Movie[] = [];
   displayBigMovieCard: boolean = false;
   dragging = false;
   heartsInterval: any = null;
@@ -62,14 +63,13 @@ export class MovieCardComponent implements OnInit {
   ngOnInit(): void {
     this.index = this.localStorageService.getIndex(); // Restore index from local storage if available
     this.likedMovieIndexes = this.localStorageService.getLikedIndexes(); // Restore liked movie indexes from local storage if available
+    this.setPlayerLikedMovies();
   }
 
   skipNext() {
     this.index++;
     this.localStorageService.setIndex(this.index);
     this.displayBigMovieCard = false;
-
-    this.getCommonLikes();
 
     // Fetch more movies every 5 skips — value is hardcoded and flagged as TODO
     if (this.index % 5 == 0) { // TODO: check this value 5
@@ -89,6 +89,7 @@ export class MovieCardComponent implements OnInit {
       next: response => {
         this.likedMovieIndexes.push(this.index);
         this.localStorageService.setLikedIndexes(this.likedMovieIndexes);
+        this.setPlayerLikedMovies();
 
         // Trigger confetti animation if mutual match (backend returns true)
         if (response === true) {
@@ -150,12 +151,18 @@ export class MovieCardComponent implements OnInit {
     });
   }
 
+  getYoutubeTrailer(movieId: number): Observable<string> {
+    const url = `${environment.apiBaseUrl}/api/v1/tmdb/youtube-trailer/${movieId}/en-US`; // TODO: add lang config
+
+    return this.http.get(url, { responseType: 'text' }); // Returns plain text (YouTube URL)
+  }
+
   getCommonLikes(): void {
     const url = `${environment.apiBaseUrl}/api/v1/session/common-likes?playerSessionId=${this.localStorageService.getSessionId()}`;
 
     this.http.get<number[]>(url).subscribe({
       next: response => {
-        this.commonMovies = response
+        this.commonLikedMovies = response
           .map(id => this.movies.find(movie => movie.id === id))//find movies by id
           .filter((m): m is Movie => m !== undefined);//filter out the undefined
       },
@@ -163,13 +170,6 @@ export class MovieCardComponent implements OnInit {
         console.error('API Error:', error);
       }
     });
-  }
-
-
-  getYoutubeTrailer(movieId: number): Observable<string> {
-    const url = `${environment.apiBaseUrl}/api/v1/tmdb/youtube-trailer/${movieId}/en-US`; // TODO: add lang config
-
-    return this.http.get(url, { responseType: 'text' }); // Returns plain text (YouTube URL)
   }
 
   back() {
@@ -297,11 +297,17 @@ export class MovieCardComponent implements OnInit {
   }
 
   showLikedMovies() {
+    this.getCommonLikes();
     this.isShowLikedMovies = true;
   }
 
   onReturn() {
     this.isShowLikedMovies = false;
+  }
+
+  setPlayerLikedMovies() {
+    this.playerLikedMovies = this.likedMovieIndexes
+      .map(index => this.movies.at(index)!);
   }
 }
 
