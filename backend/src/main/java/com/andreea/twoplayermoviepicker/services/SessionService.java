@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.andreea.twoplayermoviepicker.utils.UtilityMethods.isSeedValid;
 
@@ -67,6 +68,13 @@ public class SessionService {
 
         Session session = Session.builder()
                 .createdAt(LocalDateTime.now())
+                .genres(request.genres().stream()
+                        .map(String::valueOf)
+                        .collect(Collectors.joining(",")))
+                .watchRegion(request.watchRegion())
+                .watchProviders(request.watchProviders().stream()
+                        .map(String::valueOf)
+                        .collect(Collectors.joining(",")))
                 .build();
         session.addPlayer(player);
         session.addToSeedSequence(request.seed());
@@ -125,6 +133,7 @@ public class SessionService {
 
         log.info("Added new player with player session id {} to session with id {}", request.playerSessionId(), session.getId());
 
+        request = addFiltersToRequest(request, session);
         return ResponseEntity.ok(tmdbService.getRandomMoviesFromDiscover(request));
     }
 
@@ -152,7 +161,7 @@ public class SessionService {
 
         if (player.getSeedIndex() < session.getSeedSequence().size()) {
             String newSeed = session.getSeedSequence().get(player.getSeedIndex());
-            request.toBuilder().seed(newSeed).build();
+            request = request.toBuilder().seed(newSeed).build();
             sessionRepository.save(session);
             log.info("Player with session ID {} seed index is lower or equal than the number of seeds in the sequence, " +
                     "using seed {} for next request", player.getPlayerSessionId(), newSeed);
@@ -160,13 +169,14 @@ public class SessionService {
         }
 
         String newSeed = tmdbService.generateSeed(lastSeedInSequence);
-        request.toBuilder().seed(newSeed).build();
+        request = request.toBuilder().seed(newSeed).build();
         session.addToSeedSequence(newSeed);
         session.setUpdatedAt(LocalDateTime.now());
         log.info("Player with session ID {} seed index is higher than the number of seeds in the sequence, " +
                 "adding new seed {} to sequence", player.getPlayerSessionId(), newSeed);
         sessionRepository.save(session);
 
+        request = addFiltersToRequest(request, session);
         return ResponseEntity.ok(tmdbService.getRandomMoviesFromDiscover(request));
     }
 
@@ -327,5 +337,23 @@ public class SessionService {
             }
         }
         return null;
+    }
+
+    private RoomRequest addFiltersToRequest(RoomRequest request, Session session) {
+        RoomRequest.RoomRequestBuilder roomRequestBuilder = request.toBuilder();
+
+        if (session.getGenreIds() != null && !session.getGenreIds().isEmpty()) {
+            roomRequestBuilder.genres(session.getGenreIds().stream().toList());
+        }
+
+        if (session.getWatchRegion() != null && !session.getWatchRegion().isEmpty()) {
+            roomRequestBuilder.watchRegion(session.getWatchRegion());
+        }
+
+        if (session.getWatchProviderIds() != null && !session.getWatchProviderIds().isEmpty()) {
+            roomRequestBuilder.watchProviders(session.getWatchProviderIds().stream().toList());
+        }
+
+        return roomRequestBuilder.build();
     }
 }

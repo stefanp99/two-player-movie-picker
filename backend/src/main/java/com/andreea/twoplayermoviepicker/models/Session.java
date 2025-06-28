@@ -93,4 +93,29 @@ public class Session {
         setPlayers(currentPlayers);
     }
 
+    private String genres;
+
+    @Transient
+    public Set<Integer> getGenreIds() {
+        if (genres == null || genres.isEmpty()) {
+            return new HashSet<>();
+        }
+        return new HashSet<>(Arrays.stream(genres.split(","))
+                .map(Integer::parseInt)
+                .toList());
+    }
+
+    private String watchRegion;
+
+    private String watchProviders;
+
+    @Transient
+    public Set<Integer> getWatchProviderIds() {
+        if (watchProviders == null || watchProviders.isEmpty()) {
+            return new HashSet<>();
+        }
+        return new HashSet<>(Arrays.stream(watchProviders.split(","))
+                .map(Integer::parseInt)
+                .toList());
+    }
 }
