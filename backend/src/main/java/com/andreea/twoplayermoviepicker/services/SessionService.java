@@ -198,6 +198,7 @@ public class SessionService {
         if (otherPlayer == null) {
             log.info("No other player found in session {}. Current player session ID {}",
                     session.getId(), player.getPlayerSessionId());
+            sessionRepository.save(session);
             return ResponseEntity.ok(false);
         }
 
@@ -245,9 +246,11 @@ public class SessionService {
      */
     public ResponseEntity<List<Integer>> getCommonLikes(String playerSessionId) {
         Session session = getValidSessionByPlayerSessionId(playerSessionId);
-        return ResponseEntity.ok(session.getCommonLikes().stream()
+        List<Integer> commonLikedIds = session.getCommonLikes().stream()
                 .map(Integer::parseInt)
-                .toList());
+                .toList();
+        log.info("Retrieved {} common likes for player session id {}", commonLikedIds.size(), playerSessionId);
+        return ResponseEntity.ok(commonLikedIds);
     }
 
     /**
