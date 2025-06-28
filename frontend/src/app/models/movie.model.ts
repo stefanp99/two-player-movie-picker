@@ -1,7 +1,4 @@
-export interface Genre {
-    id: number;
-    name: string;
-}
+import { Genre } from "./genre.model";
 
 export interface Movie {
     backdropUrl: string | null;

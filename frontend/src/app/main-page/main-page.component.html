@@ -15,16 +15,43 @@
             <mat-card-header>
                 <mat-card-title>Create Room</mat-card-title>
             </mat-card-header>
-            <mat-card-actions>
-                <form class="seed-form">
-                    <button mat-raised-button color="primary" type="submit" (click)="generateSeed()">
-                        Generate Room
-                    </button>
-                    <button mat-raised-button *ngIf="canPlayerRejoin === true" (click)="rejoinRoom()">
-                        Rejoin room
-                    </button>
-                </form>
-            </mat-card-actions>
+            <mat-card-content class="generate-seed-form">
+                <mat-accordion multi="true">
+                    <mat-expansion-panel>
+                        <mat-expansion-panel-header>
+                            <mat-panel-title>Genres</mat-panel-title>
+                            <mat-panel-description>Select genre(s)</mat-panel-description>
+                        </mat-expansion-panel-header>
+                        <mat-chip-set aria-label="Genres" multiple>
+                            <mat-chip-option *ngFor="let genre of genres" [value]="genre.id"
+                                [selected]="selectedGenresIds.includes(genre.id)"
+                                (click)="toggleGenre(genre.id)">{{genre.name}}</mat-chip-option>
+                        </mat-chip-set>
+                    </mat-expansion-panel>
+                    <mat-expansion-panel>
+                        <mat-expansion-panel-header>
+                            <mat-panel-title>Watch Providers</mat-panel-title>
+                            <mat-panel-description>Select watch provider(s)</mat-panel-description>
+                        </mat-expansion-panel-header>
+                        <mat-chip-set aria-label="Watch Providers" multiple>
+                            <mat-chip-option *ngFor="let watchProvider of watchProviders"
+                                [value]="watchProvider.providerId"
+                                [selected]="selectedWatchProviderIds.includes(watchProvider.providerId)"
+                                (click)="toggleWatchProvider(watchProvider.providerId)" class="watch-provider-chip">
+                                <img [src]="watchProvider.logoUrl" class="watch-provider-logo">
+                            </mat-chip-option>
+                        </mat-chip-set>
+                    </mat-expansion-panel>
+                </mat-accordion>
+                <button mat-raised-button color="primary" (click)="generateSeed()">
+                    Generate Room
+                </button>
+                <button mat-raised-button *ngIf="canPlayerRejoin === true" (click)="rejoinRoom()">
+                    Rejoin room
+                </button>
+
+                {{selectedWatchProviderIds}}
+            </mat-card-content>
 
             <mat-divider></mat-divider>
             <div class="or-text">OR</div>
@@ -35,25 +62,26 @@
                 <mat-card-title>Join Room</mat-card-title>
             </mat-card-header>
             <mat-card-content>
-                <form [formGroup]="seedForm" (ngSubmit)="inputSeed()" class="seed-form">
+                <form [formGroup]="inputSeedForm" (ngSubmit)="inputSeed()" class="input-seed-form">
                     <mat-form-field appearance="fill">
                         <mat-label>Enter Room Seed (4 characters)</mat-label>
                         <input matInput formControlName="seed" maxlength="4" (input)="formatInputAndCheckRoomExists()"
                             placeholder="A1B2" />
-                        <mat-error *ngIf="seedForm.controls['seed'].invalid">
+                        <mat-error *ngIf="inputSeedForm.controls['seed'].invalid">
                             Must be 4 alphanumeric characters.
                         </mat-error>
-                        <mat-hint *ngIf="roomExists === false && seedForm.get('seed')?.value?.length === 4"
+                        <mat-hint *ngIf="roomExists === false && inputSeedForm.get('seed')?.value?.length === 4"
                             style="color: rgb(255, 180, 171);">
                             Room Not Found!
                         </mat-hint>
-                        <mat-hint *ngIf="roomExists && seedForm.get('seed')?.value?.length === 4" class="room-found">
+                        <mat-hint *ngIf="roomExists && inputSeedForm.get('seed')?.value?.length === 4"
+                            class="room-found">
                             Room Found
                         </mat-hint>
                     </mat-form-field>
 
                     <button mat-raised-button color="primary" type="submit"
-                        [disabled]="seedForm.invalid || !roomExists">
+                        [disabled]="inputSeedForm.invalid || !roomExists">
                         Submit
                     </button>
                 </form>

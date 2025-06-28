@@ -63,7 +63,7 @@ public class SessionService {
                 .seedIndex(0)
                 .build();
 
-        log.info("Created new player with session id {}", request.playerSessionId());
+        log.info("Created new player with player session id {}", request.playerSessionId());
 
         Session session = Session.builder()
                 .createdAt(LocalDateTime.now())
@@ -75,7 +75,7 @@ public class SessionService {
 
         sessionRepository.save(session);
 
-        return ResponseEntity.ok(tmdbService.getRandomMoviesFromDiscover(request.language(), request.seed()));
+        return ResponseEntity.ok(tmdbService.getRandomMoviesFromDiscover(request));
     }
 
     /**
@@ -112,7 +112,7 @@ public class SessionService {
             player.setUpdatedAt(LocalDateTime.now());
             sessionRepository.save(session);
             log.info("Player session id {} moved to the room with ID {}", request.playerSessionId(), session.getId());
-            return ResponseEntity.ok(tmdbService.getRandomMoviesFromDiscover(request.language(), request.seed()));
+            return ResponseEntity.ok(tmdbService.getRandomMoviesFromDiscover(request));
         }
 
         Player player = Player.builder()
@@ -123,9 +123,9 @@ public class SessionService {
         session.addPlayer(player);
         sessionRepository.save(session);
 
-        log.info("Added new player with session id {} to session with id {}", request.playerSessionId(), session.getId());
+        log.info("Added new player with player session id {} to session with id {}", request.playerSessionId(), session.getId());
 
-        return ResponseEntity.ok(tmdbService.getRandomMoviesFromDiscover(request.language(), request.seed()));
+        return ResponseEntity.ok(tmdbService.getRandomMoviesFromDiscover(request));
     }
 
     /**
@@ -152,20 +152,22 @@ public class SessionService {
 
         if (player.getSeedIndex() < session.getSeedSequence().size()) {
             String newSeed = session.getSeedSequence().get(player.getSeedIndex());
+            request.toBuilder().seed(newSeed).build();
             sessionRepository.save(session);
             log.info("Player with session ID {} seed index is lower or equal than the number of seeds in the sequence, " +
                     "using seed {} for next request", player.getPlayerSessionId(), newSeed);
-            return ResponseEntity.ok(tmdbService.getRandomMoviesFromDiscover(request.language(), newSeed));
+            return ResponseEntity.ok(tmdbService.getRandomMoviesFromDiscover(request));
         }
 
         String newSeed = tmdbService.generateSeed(lastSeedInSequence);
+        request.toBuilder().seed(newSeed).build();
         session.addToSeedSequence(newSeed);
         session.setUpdatedAt(LocalDateTime.now());
         log.info("Player with session ID {} seed index is higher than the number of seeds in the sequence, " +
                 "adding new seed {} to sequence", player.getPlayerSessionId(), newSeed);
         sessionRepository.save(session);
 
-        return ResponseEntity.ok(tmdbService.getRandomMoviesFromDiscover(request.language(), newSeed));
+        return ResponseEntity.ok(tmdbService.getRandomMoviesFromDiscover(request));
     }
 
     /**
