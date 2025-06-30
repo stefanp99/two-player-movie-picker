@@ -59,8 +59,7 @@
     </div>
 
     <div class="movie-card-wrapper">
-        <div *ngIf="displayBigMovieCard" class="movie-card">
-            <mat-card [ngStyle]="{'background-image': 'url(' + movies.at(index)?.backdropUrl + ')'}">
+            <mat-card *ngIf="displayBigMovieCard" [ngStyle]="{'background-image': 'url(' + movies.at(index)?.backdropUrl + ')'}" class="movie-card">
                 <div class="top-bar text-overlay">
                     <button mat-icon-button color="primary" (click)="displayBigMovieCard = false"
                         aria-label="Close details">
@@ -124,7 +123,6 @@
                     </button>
                 </mat-card-actions>
             </mat-card>
-        </div>
     </div>
 
     <div class="match-overlay" *ngIf="showMatchAnimation" tabindex="0" aria-live="polite">

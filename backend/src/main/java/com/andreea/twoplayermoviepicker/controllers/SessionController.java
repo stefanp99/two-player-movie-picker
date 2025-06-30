@@ -18,7 +18,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 
-@CrossOrigin(origins = "${FRONTEND_IP}")
+@CrossOrigin(origins = "${FRONTEND_IP}")//TODO: get rid of origins = ...
 @RestController
 @RequestMapping("/api/v1/session")
 public class SessionController {
