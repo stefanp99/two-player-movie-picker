@@ -41,7 +41,7 @@ public class SessionController {
      * @param request the request containing the seed of the room to join, the player session ID,
      *                and the language preferences
      * @return a ResponseEntity containing a list of MovieResponse objects associated with the existing room session,
-     *         or an appropriate error response if the room cannot be joined
+     * or an appropriate error response if the room cannot be joined
      */
     @PostMapping("join-room")
     public ResponseEntity<List<MovieResponse>> joinRoom(@RequestBody RoomRequest request) {
@@ -55,7 +55,7 @@ public class SessionController {
      * @param request the request containing the necessary details about the session, including
      *                the seed, player session ID, and language preferences
      * @return a ResponseEntity containing a list of MovieResponse objects representing
-     *         the fetched movies or an appropriate error response in case of failure
+     * the fetched movies or an appropriate error response in case of failure
      */
     @PostMapping("fetch-more")
     public ResponseEntity<List<MovieResponse>> fetchMoreMovies(@RequestBody RoomRequest request) {
@@ -68,7 +68,7 @@ public class SessionController {
      *
      * @param request the request containing the player's session ID, the session's seed, and the ID of the movie to be liked
      * @return a ResponseEntity containing a Boolean value, where true indicates that the movie is commonly liked
-     *         by both players in the session, and false otherwise
+     * by both players in the session, and false otherwise
      */
     @PostMapping("add-to-likes")
     public ResponseEntity<Boolean> addToLikesAndReturnIsCommon(@RequestBody LikeRequest request) {
@@ -80,7 +80,7 @@ public class SessionController {
      *
      * @param playerSessionId the unique session identifier of the player attempting to rejoin
      * @return a ResponseEntity containing a Boolean value:
-     *         true if the player can rejoin the session, or false otherwise
+     * true if the player can rejoin the session, or false otherwise
      */
     @GetMapping("can-player-rejoin")
     public ResponseEntity<Boolean> canPlayerRejoin(@RequestParam String playerSessionId) {
@@ -92,7 +92,7 @@ public class SessionController {
      *
      * @param playerSessionId the unique session identifier of the player for whom the common likes are being fetched
      * @return a ResponseEntity containing a list of Integer values representing the IDs of movies
-     *         commonly liked by both players, or an appropriate error response if the session or player is not found
+     * commonly liked by both players, or an appropriate error response if the session or player is not found
      */
     @GetMapping("common-likes")
     public ResponseEntity<List<Integer>> getCommonLikes(@RequestParam String playerSessionId) {
@@ -106,7 +106,7 @@ public class SessionController {
      * @return a ResponseEntity containing a Boolean value; true if the room exists, false otherwise
      */
     @GetMapping("room-exists")
-    public ResponseEntity<Boolean> doesRoomExist(@RequestParam String seed){
+    public ResponseEntity<Boolean> doesRoomExist(@RequestParam String seed) {
         return sessionService.doesRoomExist(seed);
     }
 }

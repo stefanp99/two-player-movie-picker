@@ -39,9 +39,9 @@ public class TmdbController {
      * Retrieves a list of watch providers available for movies based on the specified region and language.
      *
      * @param watchRegion the region code (e.g., country ISO code) for which the watch provider data is requested
-     * @param language the language code in which the data is requested
+     * @param language    the language code in which the data is requested
      * @return a ResponseEntity containing a list of ProviderResponse objects,
-     *         which include details such as the provider's name, logo path, and ID
+     * which include details such as the provider's name, logo path, and ID
      * @throws TmdbException if an error occurs while fetching the watch provider data
      */
     @GetMapping("watch-providers/{watchRegion}/{language}")
@@ -53,7 +53,7 @@ public class TmdbController {
      * Retrieves a list of movie genres.
      *
      * @return a ResponseEntity containing a list of GenreResponse objects,
-     *         each representing a movie genre with its corresponding ID and name
+     * each representing a movie genre with its corresponding ID and name
      * @throws TmdbException if an error occurs while fetching the genres
      */
     @GetMapping("genres")
